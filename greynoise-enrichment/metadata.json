@@ -1,7 +1,7 @@
 {
-    "title": "GreyNoise",
-    "transform_set_name": "GreyNoise",
-    "description": "Transform set of Anomali enrichments for GreyNoise",
+    "title": "GreyNoise Intelligence",
+    "transform_set_name": "GreyNoise Intelligence",
+    "description": "Transform set of Anomali enrichments for GreyNoise Intelligence",
     "icons": {
         "icon_display": "greynoise.png",
         "icon_thumbnail": "gn-thumbnail.png"
