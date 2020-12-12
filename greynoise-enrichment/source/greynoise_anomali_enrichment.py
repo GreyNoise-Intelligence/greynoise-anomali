@@ -10,9 +10,11 @@ from AnomaliEnrichment import AnomaliEnrichment, TextWidget, ChartWidget, TableW
 api_base = "https://api.greynoise.io/v2"
 api_key = None
 
+
 def enrichIP(anomali_enrichment, search_string):
     try:
-        response = requests.get(api_base + '/noise/context/' + search_string,headers = {"Accept": "application/json","key": api_key})
+        response = requests.get(api_base + '/noise/context/' + search_string,
+                                headers={"Accept": "application/json", "key": api_key})
         response_json = response.json()
         resp_code = int(response.status_code)
         if resp_code == 200:
@@ -27,20 +29,23 @@ def enrichIP(anomali_enrichment, search_string):
             anomali_enrichment.addWidget(TextWidget(ItemInWidget(ItemTypes.String,
                                                                  " for full Details)"), True))
 
-            table_widget = TableWidget("Details",["Key", "Value"])
+            table_widget = TableWidget("Details", ["Key", "Value"])
             table_widget.addRowOfItems([ItemInWidget(itemValue='Last Seen'),
                                         ItemInWidget(itemValue=response_json['last_seen'])])
             table_widget.addRowOfItems([ItemInWidget(itemValue='First Seen'),
                                         ItemInWidget(itemValue=response_json['first_seen'])])
             if response_json['classification'] == 'malicious':
                 table_widget.addRowOfItems([ItemInWidget(itemValue='Classification'),
-                                        ItemInWidget(itemValue=response_json['classification'],backgroundColor="Red",textColor="White")])
+                                            ItemInWidget(itemValue=response_json['classification'],
+                                                         backgroundColor="Red", textColor="White")])
             elif response_json['classification'] == 'benign':
                 table_widget.addRowOfItems([ItemInWidget(itemValue='Classification'),
-                                        ItemInWidget(itemValue=response_json['classification'],backgroundColor="Green",textColor="Black")])
+                                            ItemInWidget(itemValue=response_json['classification'],
+                                                         backgroundColor="Green", textColor="Black")])
             else:
                 table_widget.addRowOfItems([ItemInWidget(itemValue='Classification'),
-                                        ItemInWidget(itemValue=response_json['classification'],backgroundColor="Grey",textColor="Black")])
+                                            ItemInWidget(itemValue=response_json['classification'],
+                                                         backgroundColor="Grey", textColor="Black")])
             table_widget.addRowOfItems([ItemInWidget(itemValue='Actor'),
                                         ItemInWidget(itemValue=response_json['actor'])])
             table_widget.addRowOfItems([ItemInWidget(itemValue='Seen'),
@@ -86,7 +91,7 @@ def enrichIP(anomali_enrichment, search_string):
                     port_list.append(str(item['port']) + '/' + str(item['protocol']))
             for port in port_list:
                 text_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(port), textColor='#ffffff',
-                                                    backgroundColor='#2D4453', fontSize='medium'))
+                                                                 backgroundColor='#2D4453', fontSize='medium'))
             port_text_widget = TextWidget(text_composite_item, True)
             anomali_enrichment.addWidget(port_text_widget)
 
@@ -102,7 +107,7 @@ def enrichIP(anomali_enrichment, search_string):
                 tag_list = response_json['tags']
             for tag in tag_list:
                 text_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(tag), textColor='#ffffff',
-                                                    backgroundColor='#2D4453', fontSize='medium'))
+                                                                 backgroundColor='#2D4453', fontSize='medium'))
             tag_text_widget = TextWidget(text_composite_item, True)
             anomali_enrichment.addWidget(tag_text_widget)
 
@@ -118,7 +123,7 @@ def enrichIP(anomali_enrichment, search_string):
                 cve_list = response_json['cve']
             for cve in cve_list:
                 text_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(cve), textColor='#ffffff',
-                                                    backgroundColor='#2D4453', fontSize='medium'))
+                                                                 backgroundColor='#2D4453', fontSize='medium'))
             cve_text_widget = TextWidget(text_composite_item, True)
             anomali_enrichment.addWidget(cve_text_widget)
 
@@ -134,7 +139,7 @@ def enrichIP(anomali_enrichment, search_string):
                 ua_list = response_json['raw_data']['web']['useragents']
             for ua in ua_list:
                 text_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(ua), textColor='#ffffff',
-                                                    backgroundColor='#2D4453', fontSize='medium'))
+                                                                 backgroundColor='#2D4453', fontSize='medium'))
             ua_text_widget = TextWidget(text_composite_item, True)
             anomali_enrichment.addWidget(ua_text_widget)
 
@@ -150,7 +155,7 @@ def enrichIP(anomali_enrichment, search_string):
                 paths_list = response_json['raw_data']['web']['paths']
             for path in paths_list:
                 text_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(path), textColor='#ffffff',
-                                                    backgroundColor='#2D4453', fontSize='medium'))
+                                                                 backgroundColor='#2D4453', fontSize='medium'))
             ua_text_widget = TextWidget(text_composite_item, True)
             anomali_enrichment.addWidget(ua_text_widget)
 
@@ -167,20 +172,19 @@ def enrichIP(anomali_enrichment, search_string):
                     ja3_list.append(str(item['fingerprint']) + '/' + str(item['port']))
             for ja3 in ja3_list:
                 text_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(ja3), textColor='#ffffff',
-                                                    backgroundColor='#2D4453', fontSize='medium'))
+                                                                 backgroundColor='#2D4453', fontSize='medium'))
             ua_text_widget = TextWidget(text_composite_item, True)
             anomali_enrichment.addWidget(ua_text_widget)
 
     except:
         anomali_enrichment.addException('enrichIP Unknown Error:%sType: %s%sValue:%s' %
-                        (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1]))
+                                        (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1]))
     return anomali_enrichment
 
 
 functions = {
     'enrichIP': enrichIP
 }
-
 
 if __name__ == '__main__':
     anomali_enrichment = AnomaliEnrichment()
