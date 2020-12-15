@@ -1,11 +1,39 @@
 import tarfile
 import re
+from zipfile import ZipFile
+
 str = open('metadata.json', 'r').read()
 match = re.search(r'"version":\s"(.*)",',str)
-ver = match.group(1)
+metadata_ver = match.group(1)
 
-filename = 'bundles/greynoise-enrichment-' + ver + '.tar.gz'
+enrich_str = open('source/greynoise_anomali_enrichment.py', 'r').read()
+enrich_match = re.search(r'version\s=\s\S(.*)\S',enrich_str)
+enrich_ver = enrich_match.group(1)
+
+print("metadata_ver = " + metadata_ver)
+print("enrich_ver = " + enrich_ver)
+if enrich_ver != metadata_ver:
+    with open('source/greynoise_anomali_enrichment.py', 'r+') as f:
+        text = f.read()
+        text = re.sub('version = "' + enrich_ver + '"', 'version = "' + metadata_ver + '"', text)
+        f.seek(0)
+        f.write(text)
+        f.truncate()
+        print("Enrich file Version Updated to match Metadata")
+else:
+    print("Enrich file Version matches Metadata")
+
+filename = 'bundles/greynoise-enrichment-' + metadata_ver + '.tgz'
 tar = tarfile.open(filename, "w:gz")
 for name in ["source/greynoise_anomali_enrichment.py", "greynoise.png", "metadata.json","thumbnail.png"]:
     tar.add(name)
 tar.close()
+
+zip_file = 'bundles/greynoise-enrichment' + metadata_ver + '.zip'
+# create a ZipFile object
+zipObj = ZipFile(zip_file, 'w')
+# Add multiple files to the zip
+zipObj.write(filename)
+zipObj.write('docs/GreyNoise Enrichment Plugin for Anomali ThreatStream v'+ metadata_ver +'.pdf')
+# close the Zip File
+zipObj.close()

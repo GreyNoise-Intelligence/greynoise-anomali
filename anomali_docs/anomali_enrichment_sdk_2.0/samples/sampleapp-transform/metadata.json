@@ -1,0 +1,43 @@
+{
+    "title": "sampleapp-anomali",
+    "description": "Transform set of Anomali transforms for VirusTotal",
+    "icons": {
+        "icon_display": "sampleapp.png",
+        "icon_thumbnail": "thumbnail.png"
+    },
+    "sdk_type": "anomali",
+    "app_name": "com.anomali.sampleapp",
+    "version": "1.0.0",
+    "credentials": [
+        {
+            "name": "api_key",
+            "description": "API Key for Anomali Sampleapp (VirusTotal API key)",
+            "label": "API Key",
+            "required":true,
+            "sensitive":true
+        }
+    ],
+    "author" : "Anomali Incorporated",
+    "long_description" : "Transform set of Anomali transforms for VirusTotal (developed by Anomali). Virustotal enables analyzing suspicious files and URLs to detect types of malware.",
+    "license" : "Anomali license",
+    "source_url" : "www.anomali.com",
+    "transform_set_name": "anomali_sampleapp",
+    "transforms": [
+        {
+            "transform_name": "domainToIP",
+            "display_name": "domainToIP",
+            "description": "Find all IPs which the domain can be resolved to",
+            "author": "Anomali",
+            "parameters": "vt_anomali_transform.py domainToIP",
+            "entity_type": "anomali.Domain"
+        },
+        {   
+            "transform_name": "ipToDomain",
+            "display_name": "ipToDomain",
+            "description": "Find all domains which the IP Address can be resolved to",
+            "author": "Anomali",
+            "parameters": "vt_anomali_transform.py ipToDomain",
+            "entity_type": "anomali.IPv4Address"
+        }
+    ]
+}

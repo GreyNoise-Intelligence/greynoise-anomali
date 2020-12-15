@@ -1,14 +1,17 @@
 {
-    "title": "GreyNoise Intelligence",
-    "transform_set_name": "GreyNoise Intelligence",
-    "description": "Transform set of Anomali enrichments for GreyNoise Intelligence",
+    "title": "GreyNoise",
+    "transform_set_name": "GreyNoise",
+    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.",
     "icons": {
         "icon_display": "greynoise.png",
-        "icon_thumbnail": "gn-thumbnail.png"
+        "icon_thumbnail": "thumbnail.png"
     },
     "sdk_type": "anomali",
-    "app_name": "io.greynoise.noise",
-    "version": "1.0.0-BETA",
+    "app_name": "io.greynoise.intelligence",
+    "version": "1.0.0",
+    "author": "GreyNoise",
+    "source_url": "https://greynoise.io",
+    "license": "GreyNoise License",
     "credentials": [
         {
             "name": "api_key",

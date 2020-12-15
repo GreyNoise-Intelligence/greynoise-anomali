@@ -1,0 +1,73 @@
+{
+    "title": "SampleApp Enrichment",
+    "transform_set_name": "SampleApp Enrichment",
+    "description": "Transform set of Anomali enrichments for VirusTotal",
+    "icons": {
+        "icon_display": "virustotal.png",
+        "icon_thumbnail": "thumbnail.png"
+    },
+    "sdk_type": "anomali",
+    "app_name": "com.anomali.SampleApp_Enrichment",
+    "version": "2.0.0",
+    "credentials": [
+        {
+            "name": "api_key",
+            "description": "API Key for Anomali Sampleapp (VirusTotal API key)",
+            "label": "API Key",
+            "required": true,
+            "sensitive": true,
+            "rank": 1
+        },
+        {
+            "name": "optional_param_1",
+            "description": "optional_param_1 for Anomali Sampleapp",
+            "label": "Optional Param 1",
+            "required": false,
+            "sensitive": false,
+            "rank": 2
+        },
+        {
+            "name": "optional_param_2",
+            "description": "optional_param_2 for Anomali Sampleapp",
+            "label": "Optional Param 2",
+            "required": false,
+            "sensitive": false,
+            "rank": 3
+        }
+    ],
+    "transforms": [
+        {
+            "transform_name": "enrichDomainTabOne",
+            "pivoting": false,
+            "enrichment": true,
+            "display_name": "enrichDomainTabOne",
+            "description": "Find all the enrichment for the domain",
+            "author": "Anomali",
+            "parameters": "vt_anomali_enrichment.py enrichDomainTabOne",
+            "entity_type": "anomali.Domain",
+            "rank": 1
+        },
+        {
+            "transform_name": "enrichDomainTabTwo",
+            "pivoting": false,
+            "enrichment": true,
+            "display_name": "enrichDomainTabTwo",
+            "description": "Find all the enrichment for the domain",
+            "author": "Anomali",
+            "parameters": "vt_anomali_enrichment.py enrichDomainTabTwo",
+            "entity_type": "anomali.Domain",
+            "rank": 2
+        },
+        {
+            "transform_name": "enrichIP",
+            "pivoting": false,
+            "enrichment": true,
+            "display_name": "enrichIP",
+            "description": "Find all the enrichment for the IP",
+            "author": "Anomali",
+            "parameters": "vt_anomali_enrichment.py enrichIP",
+            "entity_type": "anomali.IPv4Address",
+            "rank": 1
+        }
+    ]
+}
