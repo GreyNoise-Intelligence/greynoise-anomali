@@ -1,3 +1,6 @@
+## 1.0.2
+  - Code improvements
+
 ## 1.0.1
   - Removed "seen" from table view as all returned results are seen
   - Split data into 3 tables to help with analyst review of data
