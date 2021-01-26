@@ -49,6 +49,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * [GreyNoise Terms](https://greynoise.io/terms)
 * [GreyNoise Developer Portal](https://developer.greynoise.io)
 
-## Links
+## Contact Us
 
 Have any questions or comments on this integration?  Contact us at [integrations@greynoise.io](mailto:integrations@greynoise.io)
