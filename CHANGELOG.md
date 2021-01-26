@@ -1,3 +1,7 @@
+## 1.0.3
+  - Code improvements
+  - Added missing VPN/VPN_Service and HASSH fields
+
 ## 1.0.2
   - Code improvements
 
