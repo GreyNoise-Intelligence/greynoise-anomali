@@ -34,6 +34,6 @@ zip_file = 'bundles/greynoise-enrichment' + metadata_ver + '.zip'
 zipObj = ZipFile(zip_file, 'w')
 # Add multiple files to the zip
 zipObj.write(filename)
-zipObj.write('docs/GreyNoise Enrichment Plugin for Anomali ThreatStream v'+ metadata_ver +'.pdf')
+zipObj.write('docs/GreyNoise Enrichment for Anomali ThreatStream v'+ metadata_ver +'.pdf')
 # close the Zip File
 zipObj.close()

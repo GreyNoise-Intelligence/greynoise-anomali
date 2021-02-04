@@ -1,3 +1,6 @@
+## 1.0.4
+  - Add error handling for bad / missing API key
+
 ## 1.0.3
   - Code improvements
   - Added missing VPN/VPN_Service and HASSH fields

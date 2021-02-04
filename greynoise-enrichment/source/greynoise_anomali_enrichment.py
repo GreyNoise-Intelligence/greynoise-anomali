@@ -10,7 +10,7 @@ from AnomaliEnrichment import AnomaliEnrichment, TextWidget, ChartWidget, TableW
 api_base = "https://api.greynoise.io/v2"
 api_key = None
 
-version = "1.0.3"
+version = "1.0.4"
 
 def enrichIP(anomali_enrichment, search_string):
     try:
@@ -19,6 +19,10 @@ def enrichIP(anomali_enrichment, search_string):
                                          "User-Agent":"greynoise-anomali-enrichment-" + version})
         response_json = response.json()
         resp_code = int(response.status_code)
+
+        if resp_code == 401:
+            anomali_enrichment.addException('API Key is Missing, Expired or Incorrect, please verify')
+
         if resp_code == 200 and response_json['seen'] == True:
             anomali_enrichment.addWidget(TextWidget(ItemInWidget(ItemTypes.String,
                                                                  "GreyNoise Info for %s" % search_string,
