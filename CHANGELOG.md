@@ -1,3 +1,6 @@
+## 1.1.0
+  - Add support for Rule It Out (RIOT) IP Lookups
+
 ## 1.0.4
   - Add error handling for bad / missing API key
 
