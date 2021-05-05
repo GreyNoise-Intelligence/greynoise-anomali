@@ -14,7 +14,7 @@ from AnomaliEnrichment import (
 api_base = "https://api.greynoise.io/v2"
 api_key = None
 
-version = "1.1.0"
+VERSION = "2.0.0"
 
 
 def enrichIP(anomali_enrichment, search_string):  # noqa: C901
@@ -24,7 +24,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             headers={
                 "Accept": "application/json",
                 "key": api_key,
-                "User-Agent": "greynoise-anomali-enrichment-" + version,
+                "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
             },
         )
         response_json = response.json()
@@ -34,7 +34,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             headers={
                 "Accept": "application/json",
                 "key": api_key,
-                "User-Agent": "greynoise-anomali-enrichment-" + version,
+                "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
             },
         )
         riot_response_json = riot_response.json()
@@ -531,36 +531,6 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             anomali_enrichment.addWidget(table_widget_additional)
             # Table Widget #3 End
 
-        elif response.status_code == 200 and not response_json["seen"]:
-            anomali_enrichment.addWidget(
-                TextWidget(
-                    ItemInWidget(
-                        ItemTypes.String,
-                        "GreyNoise Info for %s" % search_string,
-                        "GreyNoise Info for %s" % search_string,
-                        "#A9A9A9",
-                        "#FFFFFF",
-                        "30px",
-                        "bold",
-                    ),
-                    True,
-                )
-            )
-            anomali_enrichment.addWidget(
-                TextWidget(
-                    ItemInWidget(
-                        ItemTypes.String,
-                        "IP not seen scanning the Internet by GreyNoise"
-                        " in last 90 Days",
-                        "IP not seen scanning the Internet by GreyNoise"
-                        " in last 90 Days",
-                        "#FFFFFF",
-                        "#000000",
-                        "15px",
-                    ),
-                    True,
-                )
-            )
         elif riot_response.status_code == 200 and riot_response_json["riot"]:
             anomali_enrichment.addWidget(
                 TextWidget(
@@ -641,6 +611,37 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             )
             anomali_enrichment.addWidget(table_widget)
             # Table Widget #1 End
+        elif response.status_code == 200 and not response_json["seen"]:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "GreyNoise Info for %s" % search_string,
+                        "GreyNoise Info for %s" % search_string,
+                        "#A9A9A9",
+                        "#FFFFFF",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "IP not seen scanning the Internet by GreyNoise"
+                        " in last 90 Days",
+                        "IP not seen scanning the Internet by GreyNoise"
+                        " in last 90 Days",
+                        "#FFFFFF",
+                        "#000000",
+                        "15px",
+                    ),
+                    True,
+                )
+            )
+
         else:
             anomali_enrichment.addWidget(
                 TextWidget(

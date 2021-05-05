@@ -6,7 +6,7 @@
 # Anomali CONFIDENTIAL
 # __________________
 #
-#  Copyright 2016 Anomali Inc.
+#  Copyright 2021 Anomali Inc.
 #  All Rights Reserved.
 #
 # NOTICE:  All information contained herein is, and remains
@@ -45,9 +45,7 @@ class ItemTypes(object):
     Composite = "Composite"
 
 
-class BaseItem:
-    __metaclass__ = ABCMeta
-
+class BaseItem(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
         self.item = {}
@@ -135,9 +133,7 @@ class CompositeItem(BaseItem):
             self.item['onSeparateLines'] = onSeparateLines
 
 
-class BaseWidget:
-    __metaclass__ = ABCMeta
-
+class BaseWidget(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
         self.widget = {}
@@ -293,4 +289,4 @@ class AnomaliEnrichment(object):
                 for row in widget['rows']:
                     for item in row:
                         item.pop('itemType', None)
-        print(json.dumps(self.enrichment, separators=(',',':')))
+        print(json.dumps(self.enrichment, separators=(',', ':')), end=' ')

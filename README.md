@@ -5,9 +5,13 @@
 
 Initial Build with Anomali Enrichment SDK v2.0
 
-Sample Commandline Test Command:
+Sample Commandline Test Command for Context Enrichment:
 
 `python3 greynoise_anomali_enrichment.py enrichIP <enter_ip> --credentials "{\"api_key\":\"<enter_api_key>\"}"`
+
+Sample Commandline Test Command for Pivot Enrichment:
+
+`python3 greynoise_anomali_transform.py "Search IP" <enter_ip> --credentials "{\"api_key\":\"<enter_api_key>\"}"`
 
 Bundle Build Process:
 - Ensure that metadata.json contains an update version number

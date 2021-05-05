@@ -8,7 +8,7 @@
     },
     "sdk_type": "anomali",
     "app_name": "io.greynoise.intelligence",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
@@ -27,12 +27,26 @@
             "transform_name": "enrichIP",
             "pivoting": false,
             "enrichment": true,
+            "activation": true,
+            "sample_entity_value": "66.249.79.60",
             "display_name": "enrichIP",
             "description": "Find all the enrichment for the IP",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_enrichment.py enrichIP",
             "entity_type": "anomali.IPv4Address",
             "rank": 1
+        },
+        {
+            "transform_name": "enrichiptransform",
+            "pivoting": true,
+            "enrichment": false,
+            "activation": true,
+            "sample_entity_value": "66.249.79.60",
+            "display_name": "Search IP",
+            "description": "Find all the enrichment for the IP",
+            "author": "GreyNoise",
+            "parameters": "greynoise_anomali_transform.py 'Search IP'",
+            "entity_type": "anomali.IPv4Address"
         }
     ]
 }

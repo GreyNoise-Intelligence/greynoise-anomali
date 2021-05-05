@@ -1,3 +1,6 @@
+## 2.0.0
+  - Add Pivot-Based Enrichment
+
 ## 1.1.0
   - Add support for Rule It Out (RIOT) IP Lookups
 
