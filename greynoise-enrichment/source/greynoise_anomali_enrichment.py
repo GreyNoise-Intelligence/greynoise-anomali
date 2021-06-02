@@ -1,5 +1,6 @@
 import os
 import sys
+
 import requests
 
 from AnomaliEnrichment import (
@@ -11,54 +12,118 @@ from AnomaliEnrichment import (
     CompositeItem,
 )
 
-api_base = "https://api.greynoise.io/v2"
+api_base = "https://api.greynoise.io/"
 api_key = None
+api_type = "enterprise"
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 
 def enrichIP(anomali_enrichment, search_string):  # noqa: C901
     try:
-        response = requests.get(
-            api_base + "/noise/context/" + search_string,
-            headers={
-                "Accept": "application/json",
-                "key": api_key,
-                "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
-            },
-        )
-        response_json = response.json()
-
-        riot_response = requests.get(
-            api_base + "/riot/" + search_string,
-            headers={
-                "Accept": "application/json",
-                "key": api_key,
-                "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
-            },
-        )
-        riot_response_json = riot_response.json()
-
-        if response.status_code == 401:
-            anomali_enrichment.addException(
-                "API Key is Missing, Expired or Incorrect, please verify"
+        # builds response if community api is being used
+        if api_type.lower() == "community":
+            response = requests.get(
+                api_base + "v3/community/" + search_string,
+                headers={
+                    "Accept": "application/json",
+                    "key": api_key,
+                    "User-Agent": "greynoise-community-anomali-enrichment-" + VERSION,
+                },
             )
+            response_json = response.json()
 
-        if response.status_code == 200 and response_json["seen"]:
-            anomali_enrichment.addWidget(
-                TextWidget(
-                    ItemInWidget(
-                        ItemTypes.String,
-                        "GreyNoise Info for %s" % search_string,
-                        "GreyNoise Info for %s" % search_string,
-                        "#A9A9A9",
-                        "#FFFFFF",
-                        "30px",
-                        "bold",
-                    ),
-                    True,
+            if response.status_code == 401:
+                anomali_enrichment.addException(
+                    "API Key is Missing, Expired or Incorrect, please verify"
                 )
+        else:
+            # builds response if paid api is being used
+            response = requests.get(
+                api_base + "v2/noise/context/" + search_string,
+                headers={
+                    "Accept": "application/json",
+                    "key": api_key,
+                    "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
+                },
             )
+            response_json = response.json()
+
+            if response.status_code == 401:
+                anomali_enrichment.addException(
+                    "API Key is Missing, Expired or Incorrect, please verify"
+                )
+            # builds riot response
+            riot_response = requests.get(
+                api_base + "v2/riot/" + search_string,
+                headers={
+                    "Accept": "application/json",
+                    "key": api_key,
+                    "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
+                },
+            )
+            riot_response_json = riot_response.json()
+
+        # looks for success and community offering
+        if (response.status_code == 200 or response.status_code == 404) and api_type.lower() == "community":
+            if response_json.get("noise") or response_json.get("riot"):
+                anomali_enrichment.addWidget(
+                    TextWidget(ItemInWidget(ItemTypes.String, "GreyNoise Community Info for %s" % search_string,
+                                            "GreyNoise Community Info for %s" % search_string, "#A9A9A9", "#FFFFFF",
+                                            "30px", "bold", ), True, ))
+                if response_json.get("noise"):
+                    anomali_enrichment.addWidget(
+                        TextWidget(ItemInWidget(ItemTypes.Link, "https://viz.greynoise.io/ip/%s" % search_string,
+                                                "View on GreyNoise Visualizer", ), True, ))
+                elif response_json.get("riot") and not response_json.get("noise"):
+                    anomali_enrichment.addWidget(
+                        TextWidget(ItemInWidget(ItemTypes.Link, "https://viz.greynoise.io/riot/%s" % search_string,
+                                                "View on GreyNoise Visualizer", ), True, ))
+                if response_json.get("noise") and response_json.get("riot"):
+                    anomali_enrichment.addWidget(
+                        TextWidget(ItemInWidget(ItemTypes.String, "%s was also found in GreyNoise RIOT Dataset" % search_string,
+                                                "%s was also found in GreyNoise RIOT Dataset" % search_string, "#3CB371", "#FFFFFF", "20px",
+                                                "bold", ), True, ))
+
+                # Community Table Widget #1 Start
+                table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
+                table_widget.addRowOfItems(
+                    [ItemInWidget(itemValue="Is Internet Background Noise"),
+                     ItemInWidget(itemValue=response_json.get("noise")), ])
+                table_widget.addRowOfItems(
+                    [ItemInWidget(itemValue="Is Benign Service"), ItemInWidget(itemValue=response_json.get("riot")), ])
+                if response_json.get("classification") == "malicious":
+                    table_widget.addRowOfItems([ItemInWidget(itemValue="Classification"),
+                                                ItemInWidget(itemValue=response_json.get("classification"),
+                                                             backgroundColor="Red", textColor="White", ), ])
+                elif response_json.get("classification") == "benign":
+                    table_widget.addRowOfItems([ItemInWidget(itemValue="Classification"),
+                                                ItemInWidget(itemValue=response_json.get("classification"),
+                                                             backgroundColor="#3CB371", textColor="White", ), ])
+                else:
+                    table_widget.addRowOfItems([ItemInWidget(itemValue="Classification"),
+                                                ItemInWidget(itemValue=response_json.get("classification"),
+                                                             backgroundColor="Grey", textColor="Black", ), ])
+                table_widget.addRowOfItems(
+                    [ItemInWidget(itemValue="Actor or Provider"), ItemInWidget(itemValue=response_json.get("name")), ])
+                table_widget.addRowOfItems(
+                    [ItemInWidget(itemValue="Last Seen"), ItemInWidget(itemValue=response_json.get("last_seen")), ])
+
+                anomali_enrichment.addWidget(table_widget)
+                # Community Table Widget #1 End
+
+            else:
+                anomali_enrichment.addWidget(
+                    TextWidget(ItemInWidget(ItemTypes.String,
+                                            "IP not seen scanning the Internet by GreyNoise"" in last 90 Days",
+                                            "IP not seen scanning the Internet by GreyNoise"" in last 90 Days",
+                                            "#FFFFFF", "#000000", "15px", ), True, ))
+        # looks for success and paid offering
+        elif response.status_code == 200 and response_json.get("seen"):
+            anomali_enrichment.addWidget(
+                TextWidget(ItemInWidget(ItemTypes.String, "GreyNoise Info for %s" % search_string,
+                                        "GreyNoise Info for %s" % search_string, "#A9A9A9", "#FFFFFF", "30px",
+                                        "bold", ), True, ))
             anomali_enrichment.addWidget(
                 TextWidget(
                     ItemInWidget(
@@ -69,13 +134,13 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     True,
                 )
             )
-            if riot_response_json["riot"]:
+            if riot_response_json.get("riot"):
                 anomali_enrichment.addWidget(
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.String,
-                            "Also Found in GreyNoise RIOT Dataset",
-                            "Also Found in GreyNoise RIOT Dataset",
+                            "%s was also found in GreyNoise RIOT Dataset" % search_string,
+                            "%s was also found in GreyNoise RIOT Dataset" % search_string,
                             "#3CB371",
                             "#FFFFFF",
                             "20px",
@@ -676,6 +741,7 @@ if __name__ == "__main__":
     transform_name = anomali_enrichment.getTransformName()
     entity_value = anomali_enrichment.getEntityValue()
     api_key = anomali_enrichment.getCredentialValue("api_key")
+    api_type = anomali_enrichment.getCredentialValue("api_type")
 
     functions[transform_name](anomali_enrichment, entity_value)
     anomali_enrichment.returnOutput()

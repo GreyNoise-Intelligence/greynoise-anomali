@@ -8,7 +8,7 @@
     },
     "sdk_type": "anomali",
     "app_name": "io.greynoise.intelligence",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
@@ -20,6 +20,14 @@
             "required": true,
             "sensitive": true,
             "rank": 1
+        },
+                {
+            "name": "api_type",
+            "description": "GreyNoise API Type (enterprise or Community)",
+            "label": "API Type",
+            "required": true,
+            "sensitive": false,
+            "rank": 1
         }
     ],
     "transforms": [
@@ -30,20 +38,20 @@
             "activation": true,
             "sample_entity_value": "66.249.79.60",
             "display_name": "enrichIP",
-            "description": "Find all the enrichment for the IP",
+            "description": "Returns IP context data from the GreyNoise Context and RIOT API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_enrichment.py enrichIP",
             "entity_type": "anomali.IPv4Address",
             "rank": 1
         },
         {
-            "transform_name": "enrichiptransform",
+            "transform_name": "searchiptransform",
             "pivoting": true,
             "enrichment": false,
             "activation": true,
             "sample_entity_value": "66.249.79.60",
             "display_name": "Search IP",
-            "description": "Find all the enrichment for the IP",
+            "description": "Returns IP data points from the GreyNoise Context and RIOT API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_transform.py 'Search IP'",
             "entity_type": "anomali.IPv4Address"

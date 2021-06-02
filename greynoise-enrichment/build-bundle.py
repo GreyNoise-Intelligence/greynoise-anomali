@@ -56,7 +56,7 @@ for name in [
     tar.add(name)
 tar.close()
 
-zip_file = "bundles/greynoise-enrichment" + metadata_ver + ".zip"
+zip_file = "bundles/greynoise-enrichment-" + metadata_ver + ".zip"
 # create a ZipFile object
 zipObj = ZipFile(zip_file, "w")
 # Add multiple files to the zip
