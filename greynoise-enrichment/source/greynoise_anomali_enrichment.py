@@ -65,65 +65,161 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             riot_response_json = riot_response.json()
 
         # looks for success and community offering
-        if (response.status_code == 200 or response.status_code == 404) and api_type.lower() == "community":
+        if (
+            response.status_code == 200 or response.status_code == 404
+        ) and api_type.lower() == "community":
             if response_json.get("noise") or response_json.get("riot"):
                 anomali_enrichment.addWidget(
-                    TextWidget(ItemInWidget(ItemTypes.String, "GreyNoise Community Info for %s" % search_string,
-                                            "GreyNoise Community Info for %s" % search_string, "#A9A9A9", "#FFFFFF",
-                                            "30px", "bold", ), True, ))
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "GreyNoise Community Info for %s" % search_string,
+                            "GreyNoise Community Info for %s" % search_string,
+                            "#A9A9A9",
+                            "#FFFFFF",
+                            "30px",
+                            "bold",
+                        ),
+                        True,
+                    )
+                )
                 if response_json.get("noise"):
                     anomali_enrichment.addWidget(
-                        TextWidget(ItemInWidget(ItemTypes.Link, "https://viz.greynoise.io/ip/%s" % search_string,
-                                                "View on GreyNoise Visualizer", ), True, ))
+                        TextWidget(
+                            ItemInWidget(
+                                ItemTypes.Link,
+                                "https://viz.greynoise.io/ip/%s" % search_string,
+                                "View on GreyNoise Visualizer",
+                            ),
+                            True,
+                        )
+                    )
                 elif response_json.get("riot") and not response_json.get("noise"):
                     anomali_enrichment.addWidget(
-                        TextWidget(ItemInWidget(ItemTypes.Link, "https://viz.greynoise.io/riot/%s" % search_string,
-                                                "View on GreyNoise Visualizer", ), True, ))
+                        TextWidget(
+                            ItemInWidget(
+                                ItemTypes.Link,
+                                "https://viz.greynoise.io/riot/%s" % search_string,
+                                "View on GreyNoise Visualizer",
+                            ),
+                            True,
+                        )
+                    )
                 if response_json.get("noise") and response_json.get("riot"):
                     anomali_enrichment.addWidget(
-                        TextWidget(ItemInWidget(ItemTypes.String, "%s was also found in GreyNoise RIOT Dataset" % search_string,
-                                                "%s was also found in GreyNoise RIOT Dataset" % search_string, "#3CB371", "#FFFFFF", "20px",
-                                                "bold", ), True, ))
+                        TextWidget(
+                            ItemInWidget(
+                                ItemTypes.String,
+                                "%s was also found in GreyNoise RIOT "
+                                "Dataset" % search_string,
+                                "%s was also found in GreyNoise RIOT "
+                                "Dataset" % search_string,
+                                "#3CB371",
+                                "#FFFFFF",
+                                "20px",
+                                "bold",
+                            ),
+                            True,
+                        )
+                    )
 
                 # Community Table Widget #1 Start
-                table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
+                table_widget = TableWidget(
+                    "Details", ["Key", "Value"], columnWidths=["20%", "80%"]
+                )
                 table_widget.addRowOfItems(
-                    [ItemInWidget(itemValue="Is Internet Background Noise"),
-                     ItemInWidget(itemValue=response_json.get("noise")), ])
+                    [
+                        ItemInWidget(itemValue="Is Internet Background Noise"),
+                        ItemInWidget(itemValue=response_json.get("noise")),
+                    ]
+                )
                 table_widget.addRowOfItems(
-                    [ItemInWidget(itemValue="Is Benign Service"), ItemInWidget(itemValue=response_json.get("riot")), ])
+                    [
+                        ItemInWidget(itemValue="Is Benign Service"),
+                        ItemInWidget(itemValue=response_json.get("riot")),
+                    ]
+                )
                 if response_json.get("classification") == "malicious":
-                    table_widget.addRowOfItems([ItemInWidget(itemValue="Classification"),
-                                                ItemInWidget(itemValue=response_json.get("classification"),
-                                                             backgroundColor="Red", textColor="White", ), ])
+                    table_widget.addRowOfItems(
+                        [
+                            ItemInWidget(itemValue="Classification"),
+                            ItemInWidget(
+                                itemValue=response_json.get("classification"),
+                                backgroundColor="Red",
+                                textColor="White",
+                            ),
+                        ]
+                    )
                 elif response_json.get("classification") == "benign":
-                    table_widget.addRowOfItems([ItemInWidget(itemValue="Classification"),
-                                                ItemInWidget(itemValue=response_json.get("classification"),
-                                                             backgroundColor="#3CB371", textColor="White", ), ])
+                    table_widget.addRowOfItems(
+                        [
+                            ItemInWidget(itemValue="Classification"),
+                            ItemInWidget(
+                                itemValue=response_json.get("classification"),
+                                backgroundColor="#3CB371",
+                                textColor="White",
+                            ),
+                        ]
+                    )
                 else:
-                    table_widget.addRowOfItems([ItemInWidget(itemValue="Classification"),
-                                                ItemInWidget(itemValue=response_json.get("classification"),
-                                                             backgroundColor="Grey", textColor="Black", ), ])
+                    table_widget.addRowOfItems(
+                        [
+                            ItemInWidget(itemValue="Classification"),
+                            ItemInWidget(
+                                itemValue=response_json.get("classification"),
+                                backgroundColor="Grey",
+                                textColor="Black",
+                            ),
+                        ]
+                    )
                 table_widget.addRowOfItems(
-                    [ItemInWidget(itemValue="Actor or Provider"), ItemInWidget(itemValue=response_json.get("name")), ])
+                    [
+                        ItemInWidget(itemValue="Actor or Provider"),
+                        ItemInWidget(itemValue=response_json.get("name")),
+                    ]
+                )
                 table_widget.addRowOfItems(
-                    [ItemInWidget(itemValue="Last Seen"), ItemInWidget(itemValue=response_json.get("last_seen")), ])
+                    [
+                        ItemInWidget(itemValue="Last Seen"),
+                        ItemInWidget(itemValue=response_json.get("last_seen")),
+                    ]
+                )
 
                 anomali_enrichment.addWidget(table_widget)
                 # Community Table Widget #1 End
 
             else:
                 anomali_enrichment.addWidget(
-                    TextWidget(ItemInWidget(ItemTypes.String,
-                                            "IP not seen scanning the Internet by GreyNoise"" in last 90 Days",
-                                            "IP not seen scanning the Internet by GreyNoise"" in last 90 Days",
-                                            "#FFFFFF", "#000000", "15px", ), True, ))
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "IP not seen scanning the Internet by "
+                            "GreyNoise in last 90 Days",
+                            "IP not seen scanning the Internet by "
+                            "GreyNoise in last 90 Days",
+                            "#FFFFFF",
+                            "#000000",
+                            "15px",
+                        ),
+                        True,
+                    )
+                )
         # looks for success and paid offering
         elif response.status_code == 200 and response_json.get("seen"):
             anomali_enrichment.addWidget(
-                TextWidget(ItemInWidget(ItemTypes.String, "GreyNoise Info for %s" % search_string,
-                                        "GreyNoise Info for %s" % search_string, "#A9A9A9", "#FFFFFF", "30px",
-                                        "bold", ), True, ))
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "GreyNoise Info for %s" % search_string,
+                        "GreyNoise Info for %s" % search_string,
+                        "#A9A9A9",
+                        "#FFFFFF",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
             anomali_enrichment.addWidget(
                 TextWidget(
                     ItemInWidget(
@@ -139,8 +235,10 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.String,
-                            "%s was also found in GreyNoise RIOT Dataset" % search_string,
-                            "%s was also found in GreyNoise RIOT Dataset" % search_string,
+                            "%s was also found in GreyNoise RIOT Dataset"
+                            % search_string,
+                            "%s was also found in GreyNoise RIOT Dataset"
+                            % search_string,
                             "#3CB371",
                             "#FFFFFF",
                             "20px",

@@ -12,7 +12,7 @@ api_type = "enterprise"
 VERSION = "2.1.0"
 
 
-def searchiptransform(at, search_string):
+def searchiptransform(at, search_string):  # noqa: C901
     try:
         if api_type.lower() == "community":
             response = requests.get(
@@ -55,7 +55,9 @@ def searchiptransform(at, search_string):
             )
             riot_response_json = riot_response.json()
 
-        if (response.status_code == 200 or response.status_code == 404) and api_type.lower() == "community":
+        if (
+            response.status_code == 200 or response.status_code == 404
+        ) and api_type.lower() == "community":
             if response_json.get("noise"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Internet Noise")
             if response_json.get("riot"):
@@ -63,15 +65,28 @@ def searchiptransform(at, search_string):
             if response_json.get("name") and response_json.get("name") != "unknown":
                 at.addEntity(EntityTypes.Phrase, "%s" % response_json.get("name"))
             if response_json.get("classification"):
-                at.addEntity(EntityTypes.Phrase, "%s" % "GN Classification: " + response_json.get("classification", ""))
+                at.addEntity(
+                    EntityTypes.Phrase,
+                    "%s" % "GN Classification: "
+                    + response_json.get("classification", ""),
+                )
 
-        elif response.status_code == 200 and response_json.get("seen") or riot_response_json.get("riot"):
+        elif (
+            response.status_code == 200
+            and response_json.get("seen")
+            or riot_response_json.get("riot")
+        ):
             if response_json.get("seen"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Internet Noise")
-                at.addEntity(EntityTypes.Phrase, "%s" % "GN Classification: " +
-                             response_json.get("classification", ""))
+                at.addEntity(
+                    EntityTypes.Phrase,
+                    "%s" % "GN Classification: "
+                    + response_json.get("classification", ""),
+                )
                 if response_json["metadata"].get("asn"):
-                    at.addEntity(EntityTypes.AS, "%s" % response_json["metadata"].get("asn"))
+                    at.addEntity(
+                        EntityTypes.AS, "%s" % response_json["metadata"].get("asn")
+                    )
                 if response_json.get("vpn") and response_json.get("vpn_service"):
                     at.addEntity(
                         EntityTypes.Phrase,
@@ -81,14 +96,16 @@ def searchiptransform(at, search_string):
                     at.addEntity(EntityTypes.Phrase, "%s" % "Known Bot Activity")
                 if response_json["metadata"].get("tor"):
                     at.addEntity(EntityTypes.Phrase, "%s" % "Known Tor Exit Node")
-                if response_json.get("classification") == "benign" and response_json.get("actor"):
+                if response_json.get(
+                    "classification"
+                ) == "benign" and response_json.get("actor"):
                     at.addEntity(EntityTypes.Phrase, "%s" % response_json.get("actor"))
             if riot_response_json.get("riot"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Benign Service")
                 at.addEntity(EntityTypes.Phrase, "%s" % riot_response_json.get("name"))
             if not riot_response_json.get("riot") and not response_json.get("seen"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Not Internet Noise")
-    except:
+    except:  # noqa E722
         at.addException(
             "Search IP Unknown Error:%sType: %s%sValue:%s"
             % (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1])
