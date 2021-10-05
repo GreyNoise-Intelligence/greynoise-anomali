@@ -25,10 +25,6 @@ def searchiptransform(at, search_string):  # noqa: C901
             )
             response_json = response.json()
 
-            if response.status_code == 401:
-                at.addException(
-                    "API Key is Missing, Expired or Incorrect, please verify"
-                )
         else:
             response = requests.get(
                 api_base + "v2/noise/context/" + search_string,
@@ -40,24 +36,18 @@ def searchiptransform(at, search_string):  # noqa: C901
             )
             response_json = response.json()
 
-            if response.status_code == 401:
-                at.addException(
-                    "API Key is Missing, Expired or Incorrect, please verify"
+            if response.status_code == 200:
+                riot_response = requests.get(
+                    api_base + "v2/riot/" + search_string,
+                    headers={
+                        "Accept": "application/json",
+                        "key": api_key,
+                        "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
+                    },
                 )
+                riot_response_json = riot_response.json()
 
-            riot_response = requests.get(
-                api_base + "v2/riot/" + search_string,
-                headers={
-                    "Accept": "application/json",
-                    "key": api_key,
-                    "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
-                },
-            )
-            riot_response_json = riot_response.json()
-
-        if (
-            response.status_code == 200 or response.status_code == 404
-        ) and api_type.lower() == "community":
+        if (response.status_code == 200 or response.status_code == 404) and api_type.lower() == "community":
             if response_json.get("noise"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Internet Noise")
             if response_json.get("riot"):
@@ -67,26 +57,20 @@ def searchiptransform(at, search_string):  # noqa: C901
             if response_json.get("classification"):
                 at.addEntity(
                     EntityTypes.Phrase,
-                    "%s" % "GN Classification: "
-                    + response_json.get("classification", ""),
+                    "%s" % "GN Classification: " + response_json.get("classification", ""),
                 )
-
-        elif (
-            response.status_code == 200
-            and response_json.get("seen")
-            or riot_response_json.get("riot")
-        ):
+            if not response_json.get("noise") and not response_json.get("riot"):
+                at.addEntity(EntityTypes.Phrase, "%s" % "Not Internet Noise")
+        elif response.status_code == 200 and (response_json.get("seen") or riot_response_json.get("riot")):
             if response_json.get("seen"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Internet Noise")
-                at.addEntity(
-                    EntityTypes.Phrase,
-                    "%s" % "GN Classification: "
-                    + response_json.get("classification", ""),
-                )
-                if response_json["metadata"].get("asn"):
+                if response_json.get("classification"):
                     at.addEntity(
-                        EntityTypes.AS, "%s" % response_json["metadata"].get("asn")
+                        EntityTypes.Phrase,
+                        "%s" % "GN Classification: " + response_json.get("classification", ""),
                     )
+                if response_json["metadata"].get("asn"):
+                    at.addEntity(EntityTypes.AS, "%s" % response_json["metadata"].get("asn"))
                 if response_json.get("vpn") and response_json.get("vpn_service"):
                     at.addEntity(
                         EntityTypes.Phrase,
@@ -96,15 +80,19 @@ def searchiptransform(at, search_string):  # noqa: C901
                     at.addEntity(EntityTypes.Phrase, "%s" % "Known Bot Activity")
                 if response_json["metadata"].get("tor"):
                     at.addEntity(EntityTypes.Phrase, "%s" % "Known Tor Exit Node")
-                if response_json.get(
-                    "classification"
-                ) == "benign" and response_json.get("actor"):
+                if response_json.get("classification") == "benign" and response_json.get("actor"):
                     at.addEntity(EntityTypes.Phrase, "%s" % response_json.get("actor"))
             if riot_response_json.get("riot"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Benign Service")
                 at.addEntity(EntityTypes.Phrase, "%s" % riot_response_json.get("name"))
-            if not riot_response_json.get("riot") and not response_json.get("seen"):
-                at.addEntity(EntityTypes.Phrase, "%s" % "Not Internet Noise")
+        elif response.status_code == 200 and not riot_response_json.get("riot") and not response_json.get("seen"):
+            at.addEntity(EntityTypes.Phrase, "%s" % "Not Internet Noise")
+        elif response.status_code == 401:
+            at.addException("API Key is Missing, Expired or Incorrect, please verify")
+        elif response.status_code == 429:
+            at.addException("API Rate-Limit Reached, Please try again tomorrow.")
+        elif response.status_code == 500:
+            at.addException("An error occurred with the GreyNoise API, please contact GreyNoise for assistance.")
     except:  # noqa E722
         at.addException(
             "Search IP Unknown Error:%sType: %s%sValue:%s"
@@ -122,6 +110,8 @@ if __name__ == "__main__":
     entity_value = at.getEntityValue()
     api_key = at.getCredentialValue("api_key")
     api_type = at.getCredentialValue("api_type")
+    if not api_type or api_type == "":
+        api_type = "enterprise"
 
     functions[transform_name](at, entity_value)
     at.returnOutput()

@@ -12,6 +12,8 @@
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
+    "is_python3": true,
+    "update_creds": true,
     "credentials": [
         {
             "name": "api_key",
@@ -23,9 +25,9 @@
         },
                 {
             "name": "api_type",
-            "description": "GreyNoise API Type (enterprise or Community)",
+            "description": "GreyNoise API Type (enterprise or community)",
             "label": "API Type",
-            "required": true,
+            "required": false,
             "sensitive": false,
             "rank": 1
         }
