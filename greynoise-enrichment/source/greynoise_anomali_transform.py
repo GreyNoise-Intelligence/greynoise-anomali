@@ -9,7 +9,7 @@ api_base = "https://api.greynoise.io/"
 api_key = None
 api_type = "enterprise"
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
 
 
 def searchiptransform(at, search_string):  # noqa: C901
@@ -51,7 +51,7 @@ def searchiptransform(at, search_string):  # noqa: C901
             if response_json.get("noise"):
                 at.addEntity(EntityTypes.Phrase, "%s" % "Internet Noise")
             if response_json.get("riot"):
-                at.addEntity(EntityTypes.Phrase, "%s" % "Benign Service")
+                at.addEntity(EntityTypes.Phrase, "%s" % "Common Business Service")
             if response_json.get("name") and response_json.get("name") != "unknown":
                 at.addEntity(EntityTypes.Phrase, "%s" % response_json.get("name"))
             if response_json.get("classification"):
@@ -83,7 +83,7 @@ def searchiptransform(at, search_string):  # noqa: C901
                 if response_json.get("classification") == "benign" and response_json.get("actor"):
                     at.addEntity(EntityTypes.Phrase, "%s" % response_json.get("actor"))
             if riot_response_json.get("riot"):
-                at.addEntity(EntityTypes.Phrase, "%s" % "Benign Service")
+                at.addEntity(EntityTypes.Phrase, "%s" % "Common Business Service")
                 at.addEntity(EntityTypes.Phrase, "%s" % riot_response_json.get("name"))
         elif response.status_code == 200 and not riot_response_json.get("riot") and not response_json.get("seen"):
             at.addEntity(EntityTypes.Phrase, "%s" % "Not Internet Noise")
