@@ -18,7 +18,7 @@ jobs:
         uses: julianwachholz/flake8-action@v1.1.0
         with:
           checkName: "Python Lint"
-          path: greynoise-enrichment/source/greynoise**.py
+          path: greynoise-enrichment/source/
 
   black:
     name: Python Lint - black
