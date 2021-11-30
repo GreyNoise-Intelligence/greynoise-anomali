@@ -1,3 +1,9 @@
+## 2.2.0
+  - Updated enrichment to hide some attributes when value is unknown to streamline the output
+  - Updated base URL for links to Visualizer
+  - Updated terminology around RIOT IPs for clarity
+  - Added RIOT Trust Level values
+
 ## 2.1.0
   - Add support for GreyNoise Community API usage
 
