@@ -8,7 +8,7 @@
     },
     "sdk_type": "anomali",
     "app_name": "io.greynoise.intelligence",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
@@ -23,7 +23,7 @@
             "sensitive": true,
             "rank": 1
         },
-                {
+        {
             "name": "api_type",
             "description": "GreyNoise API Type (enterprise or community)",
             "label": "API Type",
@@ -56,7 +56,11 @@
             "description": "Returns IP data points from the GreyNoise Context and RIOT API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_transform.py 'Search IP'",
-            "entity_type": "anomali.IPv4Address"
+            "entity_type": "anomali.IPv4Address",
+            "output_entity_types": [
+                "anomali.Phrase",
+                "anomali.AS"
+            ]
         }
     ]
 }
