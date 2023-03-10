@@ -1,3 +1,6 @@
+## 2.3.0
+  - Updates to metadata to define output types
+
 ## 2.2.0
   - Updated enrichment to hide some attributes when value is unknown to streamline the output
   - Updated base URL for links to Visualizer

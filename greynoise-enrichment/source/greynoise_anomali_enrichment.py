@@ -16,7 +16,7 @@ api_base = "https://api.greynoise.io/"
 api_key = None
 api_type = "enterprise"
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 
 
 def enrichIP(anomali_enrichment, search_string):  # noqa: C901
