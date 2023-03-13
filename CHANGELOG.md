@@ -1,3 +1,7 @@
+## 2.4.0
+  - Add IP Similarity enrichment
+  - Add IP Timeline enrichment
+
 ## 2.3.0
   - Updates to metadata to define output types
 

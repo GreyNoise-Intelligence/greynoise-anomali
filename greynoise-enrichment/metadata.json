@@ -1,14 +1,14 @@
 {
     "title": "GreyNoise",
     "transform_set_name": "GreyNoise",
-    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.",
+    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.  Advanced features showing timeline and similarity based information is available for users with those subscription features.  Supports Community API by entering `community` in API Type field.",
     "icons": {
         "icon_display": "greynoise.png",
         "icon_thumbnail": "thumbnail.png"
     },
     "sdk_type": "anomali",
     "app_name": "io.greynoise.intelligence",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
@@ -26,7 +26,7 @@
         {
             "name": "api_type",
             "description": "GreyNoise API Type (enterprise or community)",
-            "label": "API Type",
+            "label": "API Type (enterprise or community)",
             "required": false,
             "sensitive": false,
             "rank": 1

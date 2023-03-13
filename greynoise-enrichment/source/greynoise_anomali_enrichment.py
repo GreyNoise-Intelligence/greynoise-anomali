@@ -1,22 +1,40 @@
+import copy
+import datetime
+import json
 import os
 import sys
 
 import requests
-
 from AnomaliEnrichment import (
     AnomaliEnrichment,
-    TextWidget,
-    TableWidget,
+    ChartWidget,
+    CompositeItem,
+    HorizontalRuleWidget,
     ItemInWidget,
     ItemTypes,
-    CompositeItem,
+    TableWidget,
+    TextWidget,
 )
 
 api_base = "https://api.greynoise.io/"
 api_key = None
 api_type = "enterprise"
 
-VERSION = "2.3.0"
+VERSION = "2.4.0"
+
+xrange_template_dict = {
+    "chart": {"type": "xrange", "height": 350},
+    "title": {"text": "IP Timeline"},
+    "xAxis": {"type": "datetime"},
+    "yAxis": {
+        "title": {"text": ""},
+        "categories": ["Classification", "rDNS", "ASN"],
+        "gridLineWidth": 0,
+        "reversed": True,
+    },
+    "tooltip": {"pointFormat": "{point.value}"},
+    "series": [{"name": "Timeline", "borderColor": "white", "pointWidth": 25, "data": []}],
+}
 
 
 def enrichIP(anomali_enrichment, search_string):  # noqa: C901
@@ -56,6 +74,27 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 )
                 riot_response_json = riot_response.json()
 
+                if response_json["seen"]:
+                    similarity_response = requests.get(
+                        api_base + "v3/similarity/ips/" + search_string + "?limit=50&minimum_score=0.9",
+                        headers={
+                            "Accept": "application/json",
+                            "key": api_key,
+                            "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
+                        },
+                    )
+                    similarity_response_json = similarity_response.json()
+
+                    timeline_response = requests.get(
+                        api_base + "v3/noise/ips/" + search_string + "/daily-summary?days=30&limit=50",
+                        headers={
+                            "Accept": "application/json",
+                            "key": api_key,
+                            "User-Agent": "greynoise-anomali-enrichment-" + VERSION,
+                        },
+                    )
+                    timeline_response_json = timeline_response.json()
+
         # looks for success and community offering
         if (response.status_code == 200 or response.status_code == 404) and api_type.lower() == "community":
             if response_json.get("noise") or response_json.get("riot"):
@@ -77,7 +116,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.Link,
-                            "https://www.greynoise.io/viz/ip/%s" % search_string,
+                            "https://viz.greynoise.io/ip/%s" % search_string,
                             "View on GreyNoise Visualizer",
                         ),
                         True,
@@ -196,8 +235,8 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 TextWidget(
                     ItemInWidget(
                         ItemTypes.String,
-                        "GreyNoise Info for %s" % search_string,
-                        "GreyNoise Info for %s" % search_string,
+                        "GreyNoise Intel for %s" % search_string,
+                        "GreyNoise Intel for %s" % search_string,
                         "#A9A9A9",
                         "#FFFFFF",
                         "30px",
@@ -210,7 +249,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 TextWidget(
                     ItemInWidget(
                         ItemTypes.Link,
-                        "https://www.greynoise.io/viz/ip/%s" % search_string,
+                        "https://viz.greynoise.io/ip/%s" % search_string,
                         "View on GreyNoise Visualizer",
                     ),
                     True,
@@ -309,7 +348,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             if response_json["metadata"].get("country") and response_json["metadata"].get("country") != "unknown":
                 table_widget_metadata.addRowOfItems(
                     [
-                        ItemInWidget(itemValue="Country"),
+                        ItemInWidget(itemValue="Source Country"),
                         ItemInWidget(itemValue=response_json["metadata"].get("country", "Unknown") or "Unknown"),
                     ]
                 )
@@ -319,8 +358,24 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             ):
                 table_widget_metadata.addRowOfItems(
                     [
-                        ItemInWidget(itemValue="Country Code"),
+                        ItemInWidget(itemValue="Source Country Code"),
                         ItemInWidget(itemValue=response_json["metadata"].get("country_code", "Unknown") or "Unknown"),
+                    ]
+                )
+            if response_json["metadata"].get("destination_countries"):
+                dest_countries = ", ".join(response_json["metadata"]["destination_countries"])
+                table_widget_metadata.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Destination Countries"),
+                        ItemInWidget(itemValue=dest_countries or "Unknown"),
+                    ]
+                )
+            if response_json["metadata"].get("destination_country_codes"):
+                dest_country_codes = ", ".join(response_json["metadata"]["destination_country_codes"])
+                table_widget_metadata.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Source Country Code"),
+                        ItemInWidget(itemValue=dest_country_codes or "Unknown"),
                     ]
                 )
             if response_json["metadata"].get("region") and response_json["metadata"].get("region") != "unknown":
@@ -612,6 +667,254 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             anomali_enrichment.addWidget(table_widget_additional)
             # Table Widget #3 End
 
+            if (
+                similarity_response.status_code == 200
+                and similarity_response_json
+                and int(similarity_response_json["total"]) > 1
+            ):
+                horizontal_rule_widget = HorizontalRuleWidget()
+                anomali_enrichment.addWidget(horizontal_rule_widget)
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "GreyNoise Similarity Intel for %s" % search_string,
+                            "GreyNoise Similarity Intel for %s" % search_string,
+                            "#A9A9A9",
+                            "#FFFFFF",
+                            "30px",
+                            "bold",
+                        ),
+                        True,
+                    )
+                )
+                if int(similarity_response_json["total"]) > 50:
+                    anomali_enrichment.addWidget(
+                        TextWidget(
+                            ItemInWidget(
+                                ItemTypes.String,
+                                "Showing first 50 IPs of {} IPs that have a similarity score "
+                                "of 90% or above to {}".format(similarity_response_json["total"], search_string),
+                            )
+                        )
+                    )
+                else:
+                    anomali_enrichment.addWidget(
+                        TextWidget(
+                            ItemInWidget(
+                                ItemTypes.String,
+                                "Showing {} IPs that have a similarity score "
+                                "of 90% or above to {}".format(similarity_response_json["total"], search_string),
+                            )
+                        )
+                    )
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.Link,
+                            "https://viz.greynoise.io/ip-similarity/%s" % search_string,
+                            "View IP Similarity UI on GreyNoise Visualizer",
+                        ),
+                        True,
+                    )
+                )
+                # Table Widget #4 Start
+                table_widget_similarity = TableWidget(
+                    "Similar IPs",
+                    ["IP", "Score", "Classification", "Actor", "Last Seen", "Organization", "Features Matched"],
+                    columnWidths=["10%", "5%", "10%", "15%", "10%", "15%", "35%"],
+                )
+                for similar_ip in similarity_response_json["similar_ips"]:
+                    features = ", ".join(similar_ip["features"])
+                    similar_ip["score"] = str(int(similar_ip["score"] * 100)) + "%"
+                    table_widget_similarity.addRowOfItems(
+                        [
+                            ItemInWidget(
+                                ItemTypes.Link, "/detail/v2/ip?value={}".format(similar_ip["ip"]), similar_ip["ip"]
+                            ),
+                            ItemInWidget(itemValue=similar_ip["score"]),
+                            ItemInWidget(itemValue=similar_ip["classification"]),
+                            ItemInWidget(itemValue=similar_ip["actor"]),
+                            ItemInWidget(itemValue=similar_ip["last_seen"]),
+                            ItemInWidget(itemValue=similar_ip["organization"]),
+                            ItemInWidget(itemValue=features),
+                        ]
+                    )
+                anomali_enrichment.addWidget(table_widget_similarity)
+                # Table Widget #4 End
+            elif similarity_response.status_code == 403:
+                horizontal_rule_widget = HorizontalRuleWidget()
+                anomali_enrichment.addWidget(horizontal_rule_widget)
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "GreyNoise Similarity Intel for %s is not available with your Subscription" % search_string,
+                            "GreyNoise Similarity Intel for %s is not available with your Subscription" % search_string,
+                            "#A9A9A9",
+                            "#FFFFFF",
+                            "30px",
+                            "bold",
+                        ),
+                        True,
+                    )
+                )
+
+            if timeline_response.status_code == 200 and timeline_response_json and timeline_response_json["activity"]:
+                horizontal_rule_widget = HorizontalRuleWidget()
+                anomali_enrichment.addWidget(horizontal_rule_widget)
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "GreyNoise Timeline Details for %s" % search_string,
+                            "GreyNoise Timeline Details for %s" % search_string,
+                            "#A9A9A9",
+                            "#FFFFFF",
+                            "30px",
+                            "bold",
+                        ),
+                        True,
+                    )
+                )
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "Showing Daily Summary of events for last 30 days.  Only days with events will display.",
+                        )
+                    )
+                )
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.Link,
+                            "https://viz.greynoise.io/ip/%s?view=timeline" % search_string,
+                            "View IP Timeline Details on GreyNoise Visualizer",
+                        ),
+                        True,
+                    )
+                )
+                # Table Widget #5 Start
+                table_widget_timeline = TableWidget(
+                    "IP Timeline",
+                    [
+                        "Date",
+                        "Classification",
+                        "Tags",
+                        "rDNS",
+                        "Organization",
+                        "ASN",
+                        "Ports",
+                        "Web Paths",
+                        "User Agents",
+                    ],
+                )
+                xrange_data = []
+                asn_dict = {}
+                rdns_dict = {}
+                colors = ["gray", "blue", "purple", "orange", "black"]
+                for activity in reversed(timeline_response_json["activity"]):
+                    tags = []
+                    for tag in activity["tags"]:
+                        tags.append(tag["name"])
+                    tags_string = ", ".join(tags)
+                    ports = []
+                    for item in activity["protocols"]:
+                        ports.append(str(item["port"]) + "/" + str(item["transport_protocol"]))
+                    ports_string = ", ".join(ports)
+                    paths = ", ".join(activity["http_paths"])
+                    user_agents = "| ".join(activity["http_user_agents"])
+                    date = activity["timestamp"].split("T")[0]
+                    table_widget_timeline.addRowOfItems(
+                        [
+                            ItemInWidget(itemValue=date),
+                            ItemInWidget(itemValue=activity["classification"]),
+                            ItemInWidget(itemValue=tags_string),
+                            ItemInWidget(itemValue=activity["rdns"]),
+                            ItemInWidget(itemValue=activity["organization"]),
+                            ItemInWidget(itemValue=activity["asn"]),
+                            ItemInWidget(itemValue=ports_string),
+                            ItemInWidget(itemValue=paths),
+                            ItemInWidget(itemValue=user_agents),
+                        ]
+                    )
+                    start_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+                    end_date = start_date + datetime.timedelta(days=1)
+                    start_date = int(start_date.timestamp()) * 1000
+                    end_date = int(end_date.timestamp()) * 1000
+                    if activity["classification"]:
+                        if activity["classification"] == "benign":
+                            color = "green"
+                        elif activity["classification"] == "malicious":
+                            color = "red"
+                        else:
+                            color = "gray"
+                        classification_data = {
+                            "x": start_date,
+                            "x2": end_date,
+                            "y": 0,
+                            "color": color,
+                            "value": "Classification: " + activity["classification"],
+                        }
+                        xrange_data.append(classification_data)
+                    if activity["rdns"]:
+                        if activity["rdns"] not in rdns_dict.keys():
+                            rdns_dict[activity["rdns"]] = colors[len(rdns_dict)]
+                        rdns_data = {
+                            "x": start_date,
+                            "x2": end_date,
+                            "y": 1,
+                            "color": rdns_dict[activity["rdns"]],
+                            "value": "rDNS: " + activity["rdns"],
+                        }
+                        xrange_data.append(rdns_data)
+                    if activity["asn"]:
+                        if activity["asn"] not in asn_dict.keys():
+                            asn_dict[activity["asn"]] = colors[len(asn_dict)]
+                        asn_data = {
+                            "x": start_date,
+                            "x2": end_date,
+                            "y": 2,
+                            "color": asn_dict[activity["asn"]],
+                            "value": "ASN: " + activity["asn"],
+                        }
+                        xrange_data.append(asn_data)
+                anomali_enrichment.addWidget(table_widget_timeline)
+
+                # Table Widget #5 End
+
+                # Create XRange ChartWidget
+                def create_chart_widget(template_dict, data):
+                    graph_dict = copy.deepcopy(template_dict)
+                    # fill in the data
+                    graph_dict["series"][0]["data"] = data
+                    graph_json = json.dumps(graph_dict)
+                    xrange_chart_widget = ChartWidget("IP Timeline", graph_json)
+                    return xrange_chart_widget
+
+                chart_widget = create_chart_widget(xrange_template_dict, xrange_data)
+                anomali_enrichment.addWidget(chart_widget)
+            elif timeline_response.status_code == 403:
+                horizontal_rule_widget = HorizontalRuleWidget()
+                anomali_enrichment.addWidget(horizontal_rule_widget)
+                anomali_enrichment.addWidget(
+                    TextWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "GreyNoise Timeline Details for %s are not available with your Subscription"
+                            % search_string,
+                            "GreyNoise Timeline Details for %s are not available with your Subscription"
+                            % search_string,
+                            "#A9A9A9",
+                            "#FFFFFF",
+                            "30px",
+                            "bold",
+                        ),
+                        True,
+                    )
+                )
+
         elif response.status_code == 200 and riot_response.status_code == 200 and riot_response_json.get("riot"):
             anomali_enrichment.addWidget(
                 TextWidget(
@@ -631,7 +934,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 TextWidget(
                     ItemInWidget(
                         ItemTypes.Link,
-                        "https://www.greynoise.io/viz/ip/%s" % search_string,
+                        "https://viz.greynoise.io/ip/%s" % search_string,
                         "View on GreyNoise Visualizer",
                     ),
                     True,

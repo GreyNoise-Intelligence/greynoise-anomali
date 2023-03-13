@@ -2,14 +2,13 @@ import os
 import sys
 
 import requests
-
 from AnomaliTransform import AnomaliTransform, EntityTypes
 
 api_base = "https://api.greynoise.io/"
 api_key = None
 api_type = "enterprise"
 
-VERSION = "2.3.0"
+VERSION = "2.4.0"
 
 
 def searchiptransform(at, search_string):  # noqa: C901
