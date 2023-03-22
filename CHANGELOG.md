@@ -1,4 +1,5 @@
 ## 2.4.0
+  - Updates to support SDK 3.1 and use tabbed layout
   - Add IP Similarity enrichment
   - Add IP Timeline enrichment
   - Add IP Destination Geo Information
