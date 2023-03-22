@@ -39,12 +39,35 @@
             "enrichment": true,
             "activation": true,
             "sample_entity_value": "66.249.79.60",
-            "display_name": "enrichIP",
+            "display_name": "IP Details",
             "description": "Returns IP context data from the GreyNoise Context and RIOT API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_enrichment.py enrichIP",
             "entity_type": "anomali.IPv4Address",
             "rank": 1
+        },
+        {
+            "transform_name": "enrichIPSim",
+            "pivoting": false,
+            "enrichment": true,
+            "activation": false,
+            "display_name": "IP Similarity Details",
+            "description": "Returns IP Similarity information",
+            "author": "GreyNoise",
+            "parameters": "greynoise_anomali_enrichment.py enrichIPSim",
+            "entity_type": "anomali.IPv4Address",
+            "rank": 2
+        },
+        {
+            "transform_name": "enrichIPTimeline",
+            "pivoting": false,
+            "enrichment": true,
+            "display_name": "IP Timeline Details",
+            "description": "Returns IP context data from the GreyNoise Context and RIOT API",
+            "author": "GreyNoise",
+            "parameters": "greynoise_anomali_enrichment.py enrichIPTimeline",
+            "entity_type": "anomali.IPv4Address",
+            "rank": 3
         },
         {
             "transform_name": "searchiptransform",
