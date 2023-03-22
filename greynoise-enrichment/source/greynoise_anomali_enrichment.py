@@ -33,9 +33,7 @@ xrange_template_dict = {
         "reversed": True,
     },
     "tooltip": {"pointFormat": "{point.value}"},
-    "series": [
-        {"name": "Timeline", "borderColor": "white", "pointWidth": 25, "data": []}
-    ],
+    "series": [{"name": "Timeline", "borderColor": "white", "pointWidth": 25, "data": []}],
 }
 
 
@@ -77,9 +75,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 riot_response_json = riot_response.json()
 
         # looks for success and community offering
-        if (
-            response.status_code == 200 or response.status_code == 404
-        ) and api_type.lower() == "community":
+        if (response.status_code == 200 or response.status_code == 404) and api_type.lower() == "community":
             if response_json.get("noise") or response_json.get("riot"):
                 anomali_enrichment.addWidget(
                     TextWidget(
@@ -110,10 +106,8 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                         TextWidget(
                             ItemInWidget(
                                 ItemTypes.String,
-                                "%s was also found in GreyNoise RIOT "
-                                "Dataset" % search_string,
-                                "%s was also found in GreyNoise RIOT "
-                                "Dataset" % search_string,
+                                "%s was also found in GreyNoise RIOT " "Dataset" % search_string,
+                                "%s was also found in GreyNoise RIOT " "Dataset" % search_string,
                                 "#3CB371",
                                 "#FFFFFF",
                                 "20px",
@@ -124,9 +118,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     )
 
                 # Community Table Widget #1 Start
-                table_widget = TableWidget(
-                    "Details", ["Key", "Value"], columnWidths=["20%", "80%"]
-                )
+                table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
                 table_widget.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Is Internet Background Noise"),
@@ -178,9 +170,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                         ItemInWidget(itemValue=response_json.get("name")),
                     ]
                 )
-                date_object = datetime.datetime.strptime(
-                    response_json.get("last_seen"), "%Y-%m-%d"
-                ).date()
+                date_object = datetime.datetime.strptime(response_json.get("last_seen"), "%Y-%m-%d").date()
                 last_seen_formatted = date_object.strftime("%-d %b %Y")
                 table_widget.addRowOfItems(
                     [
@@ -251,10 +241,8 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.String,
-                            "%s was also found in GreyNoise RIOT Dataset"
-                            % search_string,
-                            "%s was also found in GreyNoise RIOT Dataset"
-                            % search_string,
+                            "%s was also found in GreyNoise RIOT Dataset" % search_string,
+                            "%s was also found in GreyNoise RIOT Dataset" % search_string,
                             "#3CB371",
                             "#FFFFFF",
                             "20px",
@@ -265,12 +253,8 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 )
 
             # Table Widget #1 Start
-            table_widget = TableWidget(
-                "Details", ["Key", "Value"], columnWidths=["20%", "80%"]
-            )
-            date_object = datetime.datetime.strptime(
-                response_json.get("last_seen"), "%Y-%m-%d"
-            ).date()
+            table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
+            date_object = datetime.datetime.strptime(response_json.get("last_seen"), "%Y-%m-%d").date()
             last_seen_formatted = date_object.strftime("%-d %b %Y")
             table_widget.addRowOfItems(
                 [
@@ -278,9 +262,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     ItemInWidget(itemValue=last_seen_formatted),
                 ]
             )
-            date_object = datetime.datetime.strptime(
-                response_json.get("first_seen"), "%Y-%m-%d"
-            ).date()
+            date_object = datetime.datetime.strptime(response_json.get("first_seen"), "%Y-%m-%d").date()
             first_seen_formatted = date_object.strftime("%-d %b %Y")
             table_widget.addRowOfItems(
                 [
@@ -325,9 +307,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 table_widget.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Actor"),
-                        ItemInWidget(
-                            itemValue=response_json.get("actor", "Unknown") or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json.get("actor", "Unknown") or "Unknown"),
                     ]
                 )
 
@@ -335,48 +315,26 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             # Table Widget #1 End
 
             # Table Widget #2 Start
-            table_widget_metadata = TableWidget(
-                "Metadata", ["Key", "Value"], columnWidths=["20%", "80%"]
-            )
-            if (
-                response_json["metadata"].get("asn")
-                and response_json["metadata"].get("asn") != "unknown"
-            ):
+            table_widget_metadata = TableWidget("Metadata", ["Key", "Value"], columnWidths=["20%", "80%"])
+            if response_json["metadata"].get("asn") and response_json["metadata"].get("asn") != "unknown":
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="ASN"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get("asn", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("asn", "Unknown") or "Unknown"),
                     ]
                 )
-            if (
-                response_json["metadata"].get("city")
-                and response_json["metadata"].get("city") != "unknown"
-            ):
+            if response_json["metadata"].get("city") and response_json["metadata"].get("city") != "unknown":
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="City"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get("city", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("city", "Unknown") or "Unknown"),
                     ]
                 )
-            if (
-                response_json["metadata"].get("country")
-                and response_json["metadata"].get("country") != "unknown"
-            ):
+            if response_json["metadata"].get("country") and response_json["metadata"].get("country") != "unknown":
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Source Country"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get(
-                                "country", "Unknown"
-                            )
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("country", "Unknown") or "Unknown"),
                     ]
                 )
             if (
@@ -386,18 +344,11 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Source Country Code"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get(
-                                "country_code", "Unknown"
-                            )
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("country_code", "Unknown") or "Unknown"),
                     ]
                 )
             if response_json["metadata"].get("destination_countries"):
-                dest_countries = ", ".join(
-                    response_json["metadata"]["destination_countries"]
-                )
+                dest_countries = ", ".join(response_json["metadata"]["destination_countries"])
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Destination Countries"),
@@ -405,26 +356,18 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     ]
                 )
             if response_json["metadata"].get("destination_country_codes"):
-                dest_country_codes = ", ".join(
-                    response_json["metadata"]["destination_country_codes"]
-                )
+                dest_country_codes = ", ".join(response_json["metadata"]["destination_country_codes"])
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Destination Country Codes"),
                         ItemInWidget(itemValue=dest_country_codes or "Unknown"),
                     ]
                 )
-            if (
-                response_json["metadata"].get("region")
-                and response_json["metadata"].get("region") != "unknown"
-            ):
+            if response_json["metadata"].get("region") and response_json["metadata"].get("region") != "unknown":
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Region"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get("region", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("region", "Unknown") or "Unknown"),
                     ]
                 )
             if (
@@ -434,110 +377,64 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Organization"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get(
-                                "organization", "Unknown"
-                            )
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("organization", "Unknown") or "Unknown"),
                     ]
                 )
-            if (
-                response_json["metadata"].get("category")
-                and response_json["metadata"].get("category") != "unknown"
-            ):
+            if response_json["metadata"].get("category") and response_json["metadata"].get("category") != "unknown":
                 table_widget_metadata.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Category"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get(
-                                "category", "Unknown"
-                            )
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("category", "Unknown") or "Unknown"),
                     ]
                 )
             anomali_enrichment.addWidget(table_widget_metadata)
             # Table Widget #2 End
 
             # Table Widget #3 Start
-            table_widget_additional = TableWidget(
-                "Additional", ["Key", "Value"], columnWidths=["20%", "80%"]
-            )
+            table_widget_additional = TableWidget("Additional", ["Key", "Value"], columnWidths=["20%", "80%"])
             table_widget_additional.addRowOfItems(
                 [
                     ItemInWidget(itemValue="Known Tor Exit Node"),
-                    ItemInWidget(
-                        itemValue=str(
-                            response_json["metadata"].get("tor", "False")
-                        ).capitalize()
-                        or "False"
-                    ),
+                    ItemInWidget(itemValue=str(response_json["metadata"].get("tor", "False")).capitalize() or "False"),
                 ]
             )
             table_widget_additional.addRowOfItems(
                 [
                     ItemInWidget(itemValue="Spoofable"),
-                    ItemInWidget(
-                        itemValue=str(
-                            response_json.get("spoofable", "False")
-                        ).capitalize()
-                        or "False"
-                    ),
+                    ItemInWidget(itemValue=str(response_json.get("spoofable", "False")).capitalize() or "False"),
                 ]
             )
-            if (
-                response_json["metadata"].get("rdns")
-                and response_json["metadata"].get("rdns") != "unknown"
-            ):
+            if response_json["metadata"].get("rdns") and response_json["metadata"].get("rdns") != "unknown":
                 table_widget_additional.addRowOfItems(
                     [
                         ItemInWidget(itemValue="rDNS"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get("rdns", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("rdns", "Unknown") or "Unknown"),
                     ]
                 )
-            if (
-                response_json["metadata"].get("os")
-                and response_json["metadata"].get("os") != "unknown"
-            ):
+            if response_json["metadata"].get("os") and response_json["metadata"].get("os") != "unknown":
                 table_widget_additional.addRowOfItems(
                     [
                         ItemInWidget(itemValue="OS"),
-                        ItemInWidget(
-                            itemValue=response_json["metadata"].get("os", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json["metadata"].get("os", "Unknown") or "Unknown"),
                     ]
                 )
             table_widget_additional.addRowOfItems(
                 [
                     ItemInWidget(itemValue="VPN"),
-                    ItemInWidget(
-                        itemValue=str(response_json.get("vpn", "False")).capitalize()
-                        or "False"
-                    ),
+                    ItemInWidget(itemValue=str(response_json.get("vpn", "False")).capitalize() or "False"),
                 ]
             )
             if response_json.get("vpn"):
                 table_widget_additional.addRowOfItems(
                     [
                         ItemInWidget(itemValue="VPN Service"),
-                        ItemInWidget(
-                            itemValue=response_json.get("vpn_service", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=response_json.get("vpn_service", "Unknown") or "Unknown"),
                     ]
                 )
             table_widget_additional.addRowOfItems(
                 [
                     ItemInWidget(itemValue="Known BOT Activity"),
-                    ItemInWidget(
-                        itemValue=str(response_json.get("bot", "False")).capitalize()
-                        or "False"
-                    ),
+                    ItemInWidget(itemValue=str(response_json.get("bot", "False")).capitalize() or "False"),
                 ]
             )
 
@@ -550,9 +447,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     port_list.append(str(item["port"]) + "/" + str(item["protocol"]))
             if port_list:
                 for port in port_list:
-                    port_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, port)
-                    )
+                    port_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, port))
 
                 if len(response_json["raw_data"]["scan"]) > 10:
                     port_composite_item.addItemInWidget(
@@ -584,9 +479,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 tag_list = response_json["tags"][:10]
             if tag_list:
                 for tag in tag_list:
-                    tag_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, str(tag))
-                    )
+                    tag_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(tag)))
                 if len(response_json["tags"]) > 10:
                     tag_composite_item.addItemInWidget(
                         ItemInWidget(
@@ -597,9 +490,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                         )
                     )
 
-                table_widget_additional.addRowOfItems(
-                    [ItemInWidget(ItemTypes.String, "Tag(s)"), tag_composite_item]
-                )
+                table_widget_additional.addRowOfItems([ItemInWidget(ItemTypes.String, "Tag(s)"), tag_composite_item])
             else:
                 table_widget_additional.addRowOfItems(
                     [
@@ -614,9 +505,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 cve_list = response_json["cve"][:10]
             if cve_list:
                 for cve in cve_list:
-                    cve_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, str(cve))
-                    )
+                    cve_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(cve)))
                 if len(response_json["cve"]) > 10:
                     cve_composite_item.addItemInWidget(
                         ItemInWidget(
@@ -627,9 +516,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                         )
                     )
 
-                table_widget_additional.addRowOfItems(
-                    [ItemInWidget(ItemTypes.String, "CVE(s)"), cve_composite_item]
-                )
+                table_widget_additional.addRowOfItems([ItemInWidget(ItemTypes.String, "CVE(s)"), cve_composite_item])
             else:
                 table_widget_additional.addRowOfItems(
                     [
@@ -645,9 +532,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
 
             if ua_list:
                 for ua in ua_list:
-                    ua_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, str(ua))
-                    )
+                    ua_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(ua)))
                 if len(response_json["raw_data"]["web"]["useragents"]) > 10:
                     ua_composite_item.addItemInWidget(
                         ItemInWidget(
@@ -678,9 +563,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 paths_list = response_json["raw_data"]["web"]["paths"][:10]
             if paths_list:
                 for path in paths_list:
-                    path_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, str(path))
-                    )
+                    path_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, str(path)))
                 if len(response_json["raw_data"]["web"]["paths"]) > 10:
                     path_composite_item.addItemInWidget(
                         ItemInWidget(
@@ -691,9 +574,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                         )
                     )
 
-                table_widget_additional.addRowOfItems(
-                    [ItemInWidget(ItemTypes.String, "Path(s)"), path_composite_item]
-                )
+                table_widget_additional.addRowOfItems([ItemInWidget(ItemTypes.String, "Path(s)"), path_composite_item])
             else:
                 table_widget_additional.addRowOfItems(
                     [
@@ -706,15 +587,11 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             ja3_list = []
             if "ja3" in response_json["raw_data"]:
                 for item in response_json["raw_data"]["ja3"][:10]:
-                    ja3_list.append(
-                        str(item["fingerprint"]) + " / " + str(item["port"])
-                    )
+                    ja3_list.append(str(item["fingerprint"]) + " / " + str(item["port"]))
 
             if ja3_list:
                 for ja3 in ja3_list:
-                    ja3_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, ja3)
-                    )
+                    ja3_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, ja3))
                 if len(response_json["raw_data"]["ja3"]) > 10:
                     ja3_composite_item.addItemInWidget(
                         ItemInWidget(
@@ -743,15 +620,11 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             hassh_list = []
             if "hassh" in response_json["raw_data"]:
                 for item in response_json["raw_data"]["hassh"][:10]:
-                    hassh_list.append(
-                        str(item["fingerprint"]) + " / " + str(item["port"])
-                    )
+                    hassh_list.append(str(item["fingerprint"]) + " / " + str(item["port"]))
 
             if hassh_list:
                 for hassh in hassh_list:
-                    hassh_composite_item.addItemInWidget(
-                        ItemInWidget(ItemTypes.String, hassh)
-                    )
+                    hassh_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, hassh))
                 if len(response_json["raw_data"]["hassh"]) > 10:
                     hassh_composite_item.addItemInWidget(
                         ItemInWidget(
@@ -779,11 +652,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             anomali_enrichment.addWidget(table_widget_additional)
             # Table Widget #3 End
 
-        elif (
-            response.status_code == 200
-            and riot_response.status_code == 200
-            and riot_response_json.get("riot")
-        ):
+        elif response.status_code == 200 and riot_response.status_code == 200 and riot_response_json.get("riot"):
             anomali_enrichment.addWidget(
                 TextWidget(
                     ItemInWidget(
@@ -810,9 +679,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             )
 
             # Table Widget #1 Start
-            table_widget = TableWidget(
-                "Details", ["Key", "Value"], columnWidths=["20%", "80%"]
-            )
+            table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
             date_object = datetime.datetime.strptime(
                 riot_response_json.get("last_updated").split("T")[0], "%Y-%m-%d"
             ).date()
@@ -832,9 +699,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             table_widget.addRowOfItems(
                 [
                     ItemInWidget(itemValue="Name"),
-                    ItemInWidget(
-                        itemValue=riot_response_json.get("name", "unknown") or "unknown"
-                    ),
+                    ItemInWidget(itemValue=riot_response_json.get("name", "unknown") or "unknown"),
                 ]
             )
             if riot_response_json["trust_level"] == "1":
@@ -863,10 +728,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 table_widget.addRowOfItems(
                     [
                         ItemInWidget(itemValue="Trust Level"),
-                        ItemInWidget(
-                            itemValue=riot_response_json.get("trust_level", "Unknown")
-                            or "Unknown"
-                        ),
+                        ItemInWidget(itemValue=riot_response_json.get("trust_level", "Unknown") or "Unknown"),
                     ]
                 )
             table_widget.addRowOfItems(
@@ -908,10 +770,8 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 TextWidget(
                     ItemInWidget(
                         ItemTypes.String,
-                        "IP not seen scanning the Internet by GreyNoise"
-                        " in last 90 Days",
-                        "IP not seen scanning the Internet by GreyNoise"
-                        " in last 90 Days",
+                        "IP not seen scanning the Internet by GreyNoise" " in last 90 Days",
+                        "IP not seen scanning the Internet by GreyNoise" " in last 90 Days",
                         "#FFFFFF",
                         "#000000",
                         "15px",
@@ -920,13 +780,9 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                 )
             )
         elif response.status_code == 401:
-            anomali_enrichment.addException(
-                "API Key is Missing, Expired or Incorrect, please verify"
-            )
+            anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
         elif response.status_code == 429:
-            anomali_enrichment.addException(
-                "API Rate-Limit Reached, Please try again tomorrow."
-            )
+            anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
         elif response.status_code == 500:
             anomali_enrichment.addException(
                 "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
@@ -942,16 +798,11 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
 def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
     try:
         if api_type.lower() == "community":
-            anomali_enrichment.addException(
-                "IP Similarity Not Supported with Community API Key"
-            )
+            anomali_enrichment.addException("IP Similarity Not Supported with Community API Key")
         else:
             # builds response if paid api is being used
             similarity_response = requests.get(
-                api_base
-                + "v3/similarity/ips/"
-                + search_string
-                + "?limit=50&minimum_score=0.9",
+                api_base + "v3/similarity/ips/" + search_string + "?limit=50&minimum_score=0.9",
                 headers={
                     "Accept": "application/json",
                     "key": api_key,
@@ -985,9 +836,7 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                             ItemInWidget(
                                 ItemTypes.String,
                                 "Showing first 50 IPs of {} IPs that have a similarity score "
-                                "of 90% or above to {}".format(
-                                    similarity_response_json["total"], search_string
-                                ),
+                                "of 90% or above to {}".format(similarity_response_json["total"], search_string),
                             )
                         )
                     )
@@ -997,9 +846,7 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                             ItemInWidget(
                                 ItemTypes.String,
                                 "Showing {} IPs that have a similarity score "
-                                "of 90% or above to {}".format(
-                                    similarity_response_json["total"], search_string
-                                ),
+                                "of 90% or above to {}".format(similarity_response_json["total"], search_string),
                             )
                         )
                     )
@@ -1030,9 +877,7 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                 for similar_ip in similarity_response_json["similar_ips"]:
                     features = ", ".join(similar_ip.get("features"))
                     similar_ip["score"] = str(int(similar_ip.get("score") * 100)) + "%"
-                    date_object = datetime.datetime.strptime(
-                        similar_ip.get("last_seen"), "%Y-%m-%d"
-                    ).date()
+                    date_object = datetime.datetime.strptime(similar_ip.get("last_seen"), "%Y-%m-%d").date()
                     last_seen_formatted = date_object.strftime("%-d %b %Y")
                     table_widget_similarity.addRowOfItems(
                         [
@@ -1058,10 +903,8 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.String,
-                            "GreyNoise Similarity Intel for %s is not available with your Subscription"
-                            % search_string,
-                            "GreyNoise Similarity Intel for %s is not available with your Subscription"
-                            % search_string,
+                            "GreyNoise Similarity Intel for %s is not available with your Subscription" % search_string,
+                            "GreyNoise Similarity Intel for %s is not available with your Subscription" % search_string,
                             "#A9A9A9",
                             "#FFFFFF",
                             "30px",
@@ -1071,13 +914,9 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                     )
                 )
             elif similarity_response.status_code == 401:
-                anomali_enrichment.addException(
-                    "API Key is Missing, Expired or Incorrect, please verify"
-                )
+                anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
             elif similarity_response.status_code == 429:
-                anomali_enrichment.addException(
-                    "API Rate-Limit Reached, Please try again tomorrow."
-                )
+                anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
             elif similarity_response.status_code == 500:
                 anomali_enrichment.addException(
                     "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
@@ -1094,16 +933,11 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
 def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
     try:
         if api_type.lower() == "community":
-            anomali_enrichment.addException(
-                "IP Timeline Not Supported with Community API Key"
-            )
+            anomali_enrichment.addException("IP Timeline Not Supported with Community API Key")
         else:
             # builds response if paid api is being used
             timeline_response = requests.get(
-                api_base
-                + "v3/noise/ips/"
-                + search_string
-                + "/daily-summary?days=30&limit=50",
+                api_base + "v3/noise/ips/" + search_string + "/daily-summary?days=30&limit=50",
                 headers={
                     "Accept": "application/json",
                     "key": api_key,
@@ -1112,11 +946,7 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
             )
             timeline_response_json = timeline_response.json()
 
-            if (
-                timeline_response.status_code == 200
-                and timeline_response_json
-                and timeline_response_json["activity"]
-            ):
+            if timeline_response.status_code == 200 and timeline_response_json and timeline_response_json["activity"]:
                 anomali_enrichment.addWidget(
                     TextWidget(
                         ItemInWidget(
@@ -1143,8 +973,7 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.Link,
-                            "https://viz.greynoise.io/ip/%s?view=timeline"
-                            % search_string,
+                            "https://viz.greynoise.io/ip/%s?view=timeline" % search_string,
                             "View IP Timeline Details on GreyNoise Visualizer",
                         ),
                         True,
@@ -1176,9 +1005,7 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
                     tags_string = ", ".join(tags)
                     ports = []
                     for item in activity["protocols"]:
-                        ports.append(
-                            str(item["port"]) + "/" + str(item["transport_protocol"])
-                        )
+                        ports.append(str(item["port"]) + "/" + str(item["transport_protocol"]))
                     ports_string = ", ".join(ports)
                     paths = ", ".join(activity["http_paths"])
                     user_agents = "| ".join(activity["http_user_agents"])
@@ -1274,13 +1101,9 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
                     )
                 )
             elif timeline_response.status_code == 401:
-                anomali_enrichment.addException(
-                    "API Key is Missing, Expired or Incorrect, please verify"
-                )
+                anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
             elif timeline_response.status_code == 429:
-                anomali_enrichment.addException(
-                    "API Rate-Limit Reached, Please try again tomorrow."
-                )
+                anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
             elif timeline_response.status_code == 500:
                 anomali_enrichment.addException(
                     "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
