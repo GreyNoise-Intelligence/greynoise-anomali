@@ -170,7 +170,9 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                         ItemInWidget(itemValue=response_json.get("name")),
                     ]
                 )
-                date_object = datetime.datetime.strptime(response_json.get("last_seen"), "%Y-%m-%d").date()
+                date_object = datetime.datetime.strptime(
+                    response_json.get("last_seen", "0000-00-00"), "%Y-%m-%d"
+                ).date()
                 last_seen_formatted = date_object.strftime("%-d %b %Y")
                 table_widget.addRowOfItems(
                     [
@@ -254,7 +256,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
 
             # Table Widget #1 Start
             table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
-            date_object = datetime.datetime.strptime(response_json.get("last_seen"), "%Y-%m-%d").date()
+            date_object = datetime.datetime.strptime(response_json.get("last_seen", "0000-00-00"), "%Y-%m-%d").date()
             last_seen_formatted = date_object.strftime("%-d %b %Y")
             table_widget.addRowOfItems(
                 [
@@ -262,7 +264,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
                     ItemInWidget(itemValue=last_seen_formatted),
                 ]
             )
-            date_object = datetime.datetime.strptime(response_json.get("first_seen"), "%Y-%m-%d").date()
+            date_object = datetime.datetime.strptime(response_json.get("first_seen", "0000-00-00"), "%Y-%m-%d").date()
             first_seen_formatted = date_object.strftime("%-d %b %Y")
             table_widget.addRowOfItems(
                 [
@@ -681,7 +683,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             # Table Widget #1 Start
             table_widget = TableWidget("Details", ["Key", "Value"], columnWidths=["20%", "80%"])
             date_object = datetime.datetime.strptime(
-                riot_response_json.get("last_updated").split("T")[0], "%Y-%m-%d"
+                riot_response_json.get("last_updated", "0000-00-00T00:00:00Z").split("T")[0], "%Y-%m-%d"
             ).date()
             last_updated_formatted = date_object.strftime("%-d %b %Y")
             table_widget.addRowOfItems(
@@ -781,11 +783,16 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             )
         elif response.status_code == 401:
             anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
+            anomali_enrichment.addMessage("ERROR", "API Key is Missing, Expired or Incorrect, please verify")
         elif response.status_code == 429:
             anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
+            anomali_enrichment.addMessage("ERROR", "API Rate-Limit Reached, Please try again tomorrow.")
         elif response.status_code == 500:
             anomali_enrichment.addException(
-                "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
+                "An error occurred with the GreyNoise API, please contact GreyNoise for " "assistance."
+            )
+            anomali_enrichment.addMessage(
+                "ERROR", "An error occurred with the GreyNoise API, please contact " "GreyNoise for assistance. "
             )
     except:  # noqa E722
         anomali_enrichment.addException(
@@ -798,7 +805,7 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
 def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
     try:
         if api_type.lower() == "community":
-            anomali_enrichment.addException("IP Similarity Not Supported with Community API Key")
+            anomali_enrichment.addMessage("ERROR", "IP Similarity Not Supported with Community API Key")
         else:
             # builds response if paid api is being used
             similarity_response = requests.get(
@@ -875,9 +882,11 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                     columnWidths=["10%", "5%", "10%", "15%", "10%", "15%", "35%"],
                 )
                 for similar_ip in similarity_response_json["similar_ips"]:
-                    features = ", ".join(similar_ip.get("features"))
-                    similar_ip["score"] = str(int(similar_ip.get("score") * 100)) + "%"
-                    date_object = datetime.datetime.strptime(similar_ip.get("last_seen"), "%Y-%m-%d").date()
+                    features = ", ".join(similar_ip.get("features", None))
+                    similar_ip["score"] = str(int(similar_ip.get("score", "0") * 100)) + "%"
+                    date_object = datetime.datetime.strptime(
+                        similar_ip.get("last_seen", "0000-00-00"), "%Y-%m-%d"
+                    ).date()
                     last_seen_formatted = date_object.strftime("%-d %b %Y")
                     table_widget_similarity.addRowOfItems(
                         [
@@ -886,11 +895,11 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                                 "/detail/v2/ip?value={}".format(similar_ip.get("ip")),
                                 similar_ip.get("ip"),
                             ),
-                            ItemInWidget(itemValue=similar_ip.get("score")),
-                            ItemInWidget(itemValue=similar_ip.get("classification")),
-                            ItemInWidget(itemValue=similar_ip.get("actor")),
+                            ItemInWidget(itemValue=similar_ip.get("score", None)),
+                            ItemInWidget(itemValue=similar_ip.get("classification", None)),
+                            ItemInWidget(itemValue=similar_ip.get("actor", None)),
                             ItemInWidget(itemValue=last_seen_formatted),
-                            ItemInWidget(itemValue=similar_ip.get("organization")),
+                            ItemInWidget(itemValue=similar_ip.get("organization", None)),
                             ItemInWidget(itemValue=features),
                         ]
                     )
@@ -914,12 +923,12 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
                     )
                 )
             elif similarity_response.status_code == 401:
-                anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
+                anomali_enrichment.addMessage("ERROR", "API Key is Missing, Expired or Incorrect, please verify")
             elif similarity_response.status_code == 429:
-                anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
+                anomali_enrichment.addMessage("ERROR", "API Rate-Limit Reached, Please try again tomorrow.")
             elif similarity_response.status_code == 500:
-                anomali_enrichment.addException(
-                    "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
+                anomali_enrichment.addMessage(
+                    "ERROR", "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
                 )
     except:  # noqa E722
         anomali_enrichment.addException(
@@ -933,7 +942,7 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
 def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
     try:
         if api_type.lower() == "community":
-            anomali_enrichment.addException("IP Timeline Not Supported with Community API Key")
+            anomali_enrichment.addMessage("ERROR", "IP Timeline Not Supported with Community API Key")
         else:
             # builds response if paid api is being used
             timeline_response = requests.get(
@@ -946,7 +955,11 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
             )
             timeline_response_json = timeline_response.json()
 
-            if timeline_response.status_code == 200 and timeline_response_json and timeline_response_json["activity"]:
+            if (
+                timeline_response.status_code == 200
+                and timeline_response_json
+                and timeline_response_json.get("activity")
+            ):
                 anomali_enrichment.addWidget(
                     TextWidget(
                         ItemInWidget(
@@ -1101,12 +1114,12 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
                     )
                 )
             elif timeline_response.status_code == 401:
-                anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
+                anomali_enrichment.addMessage("ERROR", "API Key is Missing, Expired or Incorrect, please verify")
             elif timeline_response.status_code == 429:
-                anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
+                anomali_enrichment.addMessage("ERROR", "API Rate-Limit Reached, Please try again tomorrow.")
             elif timeline_response.status_code == 500:
-                anomali_enrichment.addException(
-                    "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
+                anomali_enrichment.addMessage(
+                    "ERROR", "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
                 )
     except:  # noqa E722
         anomali_enrichment.addException(

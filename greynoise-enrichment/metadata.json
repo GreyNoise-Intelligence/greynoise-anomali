@@ -62,6 +62,7 @@
             "transform_name": "enrichIPTimeline",
             "pivoting": false,
             "enrichment": true,
+            "activation": false,
             "display_name": "IP Timeline Details",
             "description": "Returns IP context data from the GreyNoise Context and RIOT API",
             "author": "GreyNoise",
