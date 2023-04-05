@@ -1,3 +1,11 @@
+## 2.4.0
+  - Updates to support SDK 3.1 and use tabbed layout
+  - Add IP Similarity enrichment
+  - Add IP Timeline enrichment
+  - Add IP Destination Geo Information
+  - Renames Country and Country Code to Source Country and Source Country Code
+  - Fixes Viz hyperlinks
+
 ## 2.3.0
   - Updates to metadata to define output types
 
