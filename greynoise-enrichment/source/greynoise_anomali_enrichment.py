@@ -799,6 +799,9 @@ def enrichIP(anomali_enrichment, search_string):  # noqa: C901
             "enrichIP Unknown Error:%sType: %s%sValue:%s"
             % (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1])
         )
+        anomali_enrichment.addMessage(
+            "ERROR", "An Unexpected error occurred, please try again. If the error persists please contact support."
+        )
     return anomali_enrichment
 
 
@@ -935,7 +938,9 @@ def enrichIPSim(anomali_enrichment, search_string):  # noqa: C901
             "enrichIPSimilar Unknown Error:%sType: %s%sValue:%s"
             % (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1])
         )
-
+        anomali_enrichment.addMessage(
+            "ERROR", "An Unexpected error occurred, please try again. If the error persists please contact support."
+        )
     return anomali_enrichment
 
 
@@ -1125,6 +1130,9 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
         anomali_enrichment.addException(
             "enrichIPTimeline Unknown Error:%sType: %s%sValue:%s"
             % (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1])
+        )
+        anomali_enrichment.addMessage(
+            "ERROR", "An Unexpected error occurred, please try again. If the error persists please contact support."
         )
 
     return anomali_enrichment
