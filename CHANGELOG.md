@@ -1,3 +1,9 @@
+## 3.0.0
+  - Update to use GreyNoise v3 Endpoints, adds additional fields and information
+  - Corrected issues with IP Timeline Tab not displaying data due to API changes
+  - Remove IP Similarity Tab due to deprecation of feature
+  - Code clean up and documenation
+
 ## 2.4.0
   - Updates to support SDK 3.1 and use tabbed layout
   - Add IP Similarity enrichment

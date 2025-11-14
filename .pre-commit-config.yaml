@@ -14,20 +14,18 @@ repos:
         language: system
         types:
           - python
+        files: (^|/)greynoise_.*\.py$
       - id: isort
         name: Style check (isort)
         entry: isort
         language: system
         types:
           - python
+        files: (^|/)greynoise_.*\.py$
       - id: flake8
         name: Static analysis (flake8)
         entry: flake8
         language: system
         types:
           - python
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.17.0
-    hooks:
-      - id: yamllint
-        args: [-c=.yamllint]
+        files: (^|/)greynoise_.*\.py$

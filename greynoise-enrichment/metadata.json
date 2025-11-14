@@ -1,14 +1,14 @@
 {
     "title": "GreyNoise",
     "transform_set_name": "GreyNoise",
-    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.  Advanced features showing timeline and similarity based information is available for users with those subscription features.  Supports Community API by entering `community` in API Type field.",
+    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.  Advanced view showing timeline based information is available for users with the subscription features.  Supports free-tier users until rate-limits are reached.",
     "icons": {
         "icon_display": "greynoise.png",
         "icon_thumbnail": "thumbnail.png"
     },
     "sdk_type": "anomali",
     "app_name": "io.greynoise.intelligence",
-    "version": "2.4.0",
+    "version": "3.0.0",
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
@@ -21,14 +21,6 @@
             "label": "API Key",
             "required": true,
             "sensitive": true,
-            "rank": 1
-        },
-        {
-            "name": "api_type",
-            "description": "GreyNoise API Type (enterprise or community)",
-            "label": "API Type (enterprise or community)",
-            "required": false,
-            "sensitive": false,
             "rank": 1
         }
     ],
@@ -45,18 +37,6 @@
             "parameters": "greynoise_anomali_enrichment.py enrichIP",
             "entity_type": "anomali.IPv4Address",
             "rank": 1
-        },
-        {
-            "transform_name": "enrichIPSim",
-            "pivoting": false,
-            "enrichment": true,
-            "activation": false,
-            "display_name": "IP Similarity Details",
-            "description": "Returns IP Similarity information",
-            "author": "GreyNoise",
-            "parameters": "greynoise_anomali_enrichment.py enrichIPSim",
-            "entity_type": "anomali.IPv4Address",
-            "rank": 2
         },
         {
             "transform_name": "enrichIPTimeline",
