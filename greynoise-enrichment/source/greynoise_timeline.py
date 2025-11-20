@@ -168,8 +168,8 @@ def fetch_field_timeline(
         - classification: Threat classification
 
     Error Handling:
-        - Prints warning message on failure
-        - Returns None rather than raising exception
+        - Returns None on failure (no warning printed)
+        - Caller is responsible for handling None results
         - Uses 30-second timeout for API request
         - Validates HTTP status with raise_for_status()
 
@@ -185,8 +185,7 @@ def fetch_field_timeline(
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
         return response.json()
-    except Exception as e:
-        print(f"Warning: Failed to fetch {field}: {e}")
+    except Exception:
         return None
 
 
@@ -261,7 +260,7 @@ def process_field_data(
     return field_data
 
 
-def get_greynoise_timeline(
+def get_greynoise_timeline(  # noqa: C901
     ip: str,
     api_key: str,
     fields: Optional[List[str]] = None,
@@ -324,10 +323,11 @@ def get_greynoise_timeline(
         - Requires initial tags mapping API call
 
     Error Handling:
-        - Failed field requests return None and print warnings
+        - Failed field requests are silently ignored
         - Continue processing other fields on individual failures
-        - Returns partial results if some fields fail
-        - Empty list if no data available
+        - Returns partial results if at least one field succeeds
+        - Raises exception if ALL field requests fail
+        - Empty list if no data available from successful requests
 
     Example Usage:
         >>> # Basic usage with defaults
@@ -372,6 +372,10 @@ def get_greynoise_timeline(
     # Dictionary to store consolidated data by timestamp
     consolidated_data = defaultdict(dict)
 
+    # Track successful and failed requests
+    successful_fields = []
+    failed_fields = []
+
     # Fetch all field timelines in parallel
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all API requests
@@ -386,6 +390,7 @@ def get_greynoise_timeline(
             try:
                 data = future.result()
                 if data:
+                    successful_fields.append(field)
                     # Process field data
                     field_data = process_field_data(data, field, tags_dict, FIELD_MAPPING)
 
@@ -395,8 +400,17 @@ def get_greynoise_timeline(
                             if display_name not in consolidated_data[timestamp]:
                                 consolidated_data[timestamp][display_name] = []
                             consolidated_data[timestamp][display_name].append(label)
-            except Exception as e:
-                print(f"Error processing {field}: {e}")
+                else:
+                    failed_fields.append(field)
+            except Exception:
+                failed_fields.append(field)
+
+    # If all requests failed, raise an exception
+    if not successful_fields and failed_fields:
+        raise Exception(
+            "Failed to fetch timeline data for all fields. "
+            "This may be due to API access restrictions or network issues."
+        )
 
     # Convert to sorted list
     consolidated_list = []
@@ -410,7 +424,7 @@ def get_greynoise_timeline(
 
 # Example usage
 if __name__ == "__main__":
-    api_key = "91c2b4084abb95fe4eecb87bb9bc503877df49c064d8de9fe16dc306e638f052"
+    api_key = "$GREYNOISE_API_KEY"
     ip_address = "210.16.184.165"
 
     timeline_data = get_greynoise_timeline(

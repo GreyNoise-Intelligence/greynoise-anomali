@@ -42,7 +42,6 @@ except ImportError:
 
 api_base = "https://api.greynoise.io/"
 api_key = None
-api_type = "enterprise"
 
 VERSION = "3.0.0"
 USER_AGENT = "greynoise-anomali-enrichment-" + VERSION
@@ -1063,33 +1062,257 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
         # Returns enrichment with 30-day timeline table and chart
     """
     try:
-        if api_type.lower() == "community":
-            anomali_enrichment.addMessage("ERROR", "IP Timeline Not Supported with Community API Key")
-        else:
-            # Use the new threaded timeline function if available
-            timeline_data = None
-            timeline_error = None
+        # Use the new threaded timeline function if available
+        timeline_data = None
+        timeline_error = None
 
-            if get_greynoise_timeline:
-                try:
-                    timeline_data = get_greynoise_timeline(
-                        ip=search_string,
-                        api_key=api_key,
-                        days=30,
-                        granularity="1d",
-                        max_workers=8,
-                        user_agent=USER_AGENT,
+        if get_greynoise_timeline:
+            try:
+                timeline_data = get_greynoise_timeline(
+                    ip=search_string,
+                    api_key=api_key,
+                    days=30,
+                    granularity="1d",
+                    max_workers=8,
+                    user_agent=USER_AGENT,
+                )
+            except Exception as e:
+                timeline_error = str(e)
+
+        if timeline_data and len(timeline_data) > 0:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "GreyNoise Timeline Details for %s" % search_string,
+                        "GreyNoise Timeline Details for %s" % search_string,
+                        "#A9A9A9",
+                        "#FFFFFF",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Showing Daily Summary of events for last 30 days.  Only days with events will display.",
                     )
-                except Exception as e:
-                    timeline_error = str(e)
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.Link,
+                        "https://viz.greynoise.io/ip/%s?view=timeline" % search_string,
+                        "View IP Timeline Details on GreyNoise Visualizer",
+                    ),
+                    True,
+                )
+            )
+            # Table Widget #5 Start
+            table_widget_timeline = TableWidget(
+                "IP Timeline",
+                columnHeadings=[
+                    "Date",
+                    "Classification",
+                    "Tags",
+                    "rDNS",
+                    "Organization",
+                    "ASN",
+                    "Ports",
+                    "Web Paths",
+                    "User Agents",
+                ],
+                columnTypes=[
+                    ItemTypes.Date,
+                    ItemTypes.String,
+                    ItemTypes.Composite,
+                    ItemTypes.String,
+                    ItemTypes.String,
+                    ItemTypes.String,
+                    ItemTypes.Composite,
+                    ItemTypes.Composite,
+                    ItemTypes.Composite,
+                ],
+                columnWidths=["8%", "8%"],
+            )
+            xrange_data = []
+            asn_dict = {}
+            rdns_dict = {}
+            colors = ["gray", "blue", "purple", "orange", "black"]
 
-            if timeline_data and len(timeline_data) > 0:
+            # Process the new timeline data format
+            for activity in reversed(timeline_data):
+                # Extract date and format it
+                date = activity.get("Date", "").split("T")[0]
+                date_object = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                date_formatted = date_object.strftime("%-d %b %Y")
+
+                # Extract and format fields (all are lists in the new format)
+                # Use CompositeItem to display each item on a separate line (limited to 10 items)
+                tags_list = activity.get("Tags", [])
+                tags_composite_item = CompositeItem(onSeparateLines=True)
+                for tag in tags_list[:10]:
+                    tags_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, tag))
+                if len(tags_list) > 10:
+                    tags_composite_item.addItemInWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "Output limited to 10 of {} items, see Visualizer for more details.".format(
+                                str(len(tags_list))
+                            ),
+                        )
+                    )
+
+                ports_list = activity.get("Ports", [])
+                ports_composite_item = CompositeItem(onSeparateLines=True)
+                for port in ports_list[:10]:
+                    ports_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, port))
+                if len(ports_list) > 10:
+                    ports_composite_item.addItemInWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "Output limited to 10 of {} items, see Visualizer for more details.".format(
+                                str(len(ports_list))
+                            ),
+                        )
+                    )
+
+                paths_list = activity.get("Web Paths", [])
+                paths_composite_item = CompositeItem(onSeparateLines=True)
+                for path in paths_list[:10]:
+                    paths_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, path))
+                if len(paths_list) > 10:
+                    paths_composite_item.addItemInWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "Output limited to 10 of {} items, see Visualizer for more details.".format(
+                                str(len(paths_list))
+                            ),
+                        )
+                    )
+
+                user_agents_list = activity.get("User Agents", [])
+                user_agents_composite_item = CompositeItem(onSeparateLines=True)
+                for user_agent in user_agents_list[:10]:
+                    user_agents_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, user_agent))
+                if len(user_agents_list) > 10:
+                    user_agents_composite_item.addItemInWidget(
+                        ItemInWidget(
+                            ItemTypes.String,
+                            "Output limited to 10 of {} items, see Visualizer for more details.".format(
+                                str(len(user_agents_list))
+                            ),
+                        )
+                    )
+
+                classification_list = activity.get("Classification", [])
+                classification = classification_list[0] if classification_list else ""
+
+                rdns_list = activity.get("rDNS", [])
+                rdns = rdns_list[0] if rdns_list else ""
+
+                organization_list = activity.get("Organization", [])
+                organization = organization_list[0] if organization_list else ""
+
+                asn_list = activity.get("ASN", [])
+                asn = asn_list[0] if asn_list else ""
+
+                # Add row to table
+                table_widget_timeline.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue=date_formatted),
+                        ItemInWidget(itemValue=classification),
+                        tags_composite_item,
+                        ItemInWidget(itemValue=rdns),
+                        ItemInWidget(itemValue=organization),
+                        ItemInWidget(itemValue=asn),
+                        ports_composite_item,
+                        paths_composite_item,
+                        user_agents_composite_item,
+                    ]
+                )
+
+                # Build xrange chart data
+                start_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+                end_date = start_date + datetime.timedelta(days=1)
+                start_date = int(start_date.timestamp()) * 1000
+                end_date = int(end_date.timestamp()) * 1000
+
+                if classification:
+                    if classification == "benign":
+                        color = "green"
+                    elif classification == "malicious":
+                        color = "red"
+                    elif classification == "suspicious":
+                        color = "yellow"
+                    else:
+                        color = "gray"
+                    classification_data = {
+                        "x": start_date,
+                        "x2": end_date,
+                        "y": 0,
+                        "color": color,
+                        "value": "Classification: " + classification,
+                    }
+                    xrange_data.append(classification_data)
+
+                if rdns:
+                    if rdns not in rdns_dict.keys():
+                        rdns_dict[rdns] = colors[len(rdns_dict) % len(colors)]
+                    rdns_data = {
+                        "x": start_date,
+                        "x2": end_date,
+                        "y": 1,
+                        "color": rdns_dict[rdns],
+                        "value": "rDNS: " + rdns,
+                    }
+                    xrange_data.append(rdns_data)
+
+                if asn:
+                    if asn not in asn_dict.keys():
+                        asn_dict[asn] = colors[len(asn_dict) % len(colors)]
+                    asn_data = {
+                        "x": start_date,
+                        "x2": end_date,
+                        "y": 2,
+                        "color": asn_dict[asn],
+                        "value": "ASN: " + asn,
+                    }
+                    xrange_data.append(asn_data)
+            anomali_enrichment.addWidget(table_widget_timeline)
+
+            # Table Widget #5 End
+
+            # Create XRange ChartWidget
+            def create_chart_widget(template_dict, data):
+                graph_dict = copy.deepcopy(template_dict)
+                # fill in the data
+                graph_dict["series"][0]["data"] = data
+                graph_json = json.dumps(graph_dict)
+                xrange_chart_widget = ChartWidget("IP Timeline", graph_json)
+                return xrange_chart_widget
+
+            chart_widget = create_chart_widget(xrange_template_dict, xrange_data)
+            anomali_enrichment.addWidget(chart_widget)
+        elif timeline_error:
+            # Handle errors from the timeline function
+            if "401" in timeline_error or "Unauthorized" in timeline_error:
+                anomali_enrichment.addMessage("ERROR", "API Key is Missing, Expired or Incorrect, please verify")
+            elif "403" in timeline_error or "Forbidden" in timeline_error:
+                horizontal_rule_widget = HorizontalRuleWidget()
+                anomali_enrichment.addWidget(horizontal_rule_widget)
                 anomali_enrichment.addWidget(
                     TextWidget(
                         ItemInWidget(
                             ItemTypes.String,
-                            "GreyNoise Timeline Details for %s" % search_string,
-                            "GreyNoise Timeline Details for %s" % search_string,
+                            "GreyNoise Timeline Details for %s are not available with your Subscription"
+                            % search_string,
+                            "GreyNoise Timeline Details for %s are not available with your Subscription"
+                            % search_string,
                             "#A9A9A9",
                             "#FFFFFF",
                             "30px",
@@ -1098,242 +1321,15 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
                         True,
                     )
                 )
-                anomali_enrichment.addWidget(
-                    TextWidget(
-                        ItemInWidget(
-                            ItemTypes.String,
-                            "Showing Daily Summary of events for last 30 days.  Only days with events will display.",
-                        )
-                    )
-                )
-                anomali_enrichment.addWidget(
-                    TextWidget(
-                        ItemInWidget(
-                            ItemTypes.Link,
-                            "https://viz.greynoise.io/ip/%s?view=timeline" % search_string,
-                            "View IP Timeline Details on GreyNoise Visualizer",
-                        ),
-                        True,
-                    )
-                )
-                # Table Widget #5 Start
-                table_widget_timeline = TableWidget(
-                    "IP Timeline",
-                    columnHeadings=[
-                        "Date",
-                        "Classification",
-                        "Tags",
-                        "rDNS",
-                        "Organization",
-                        "ASN",
-                        "Ports",
-                        "Web Paths",
-                        "User Agents",
-                    ],
-                    columnTypes=[
-                        ItemTypes.Date,
-                        ItemTypes.String,
-                        ItemTypes.Composite,
-                        ItemTypes.String,
-                        ItemTypes.String,
-                        ItemTypes.String,
-                        ItemTypes.Composite,
-                        ItemTypes.Composite,
-                        ItemTypes.Composite,
-                    ],
-                    columnWidths=["8%", "8%"],
-                )
-                xrange_data = []
-                asn_dict = {}
-                rdns_dict = {}
-                colors = ["gray", "blue", "purple", "orange", "black"]
-
-                # Process the new timeline data format
-                for activity in reversed(timeline_data):
-                    # Extract date and format it
-                    date = activity.get("Date", "").split("T")[0]
-                    date_object = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-                    date_formatted = date_object.strftime("%-d %b %Y")
-
-                    # Extract and format fields (all are lists in the new format)
-                    # Use CompositeItem to display each item on a separate line (limited to 10 items)
-                    tags_list = activity.get("Tags", [])
-                    tags_composite_item = CompositeItem(onSeparateLines=True)
-                    for tag in tags_list[:10]:
-                        tags_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, tag))
-                    if len(tags_list) > 10:
-                        tags_composite_item.addItemInWidget(
-                            ItemInWidget(
-                                ItemTypes.String,
-                                "Output limited to 10 of {} items, see Visualizer for more details.".format(
-                                    str(len(tags_list))
-                                ),
-                            )
-                        )
-
-                    ports_list = activity.get("Ports", [])
-                    ports_composite_item = CompositeItem(onSeparateLines=True)
-                    for port in ports_list[:10]:
-                        ports_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, port))
-                    if len(ports_list) > 10:
-                        ports_composite_item.addItemInWidget(
-                            ItemInWidget(
-                                ItemTypes.String,
-                                "Output limited to 10 of {} items, see Visualizer for more details.".format(
-                                    str(len(ports_list))
-                                ),
-                            )
-                        )
-
-                    paths_list = activity.get("Web Paths", [])
-                    paths_composite_item = CompositeItem(onSeparateLines=True)
-                    for path in paths_list[:10]:
-                        paths_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, path))
-                    if len(paths_list) > 10:
-                        paths_composite_item.addItemInWidget(
-                            ItemInWidget(
-                                ItemTypes.String,
-                                "Output limited to 10 of {} items, see Visualizer for more details.".format(
-                                    str(len(paths_list))
-                                ),
-                            )
-                        )
-
-                    user_agents_list = activity.get("User Agents", [])
-                    user_agents_composite_item = CompositeItem(onSeparateLines=True)
-                    for user_agent in user_agents_list[:10]:
-                        user_agents_composite_item.addItemInWidget(ItemInWidget(ItemTypes.String, user_agent))
-                    if len(user_agents_list) > 10:
-                        user_agents_composite_item.addItemInWidget(
-                            ItemInWidget(
-                                ItemTypes.String,
-                                "Output limited to 10 of {} items, see Visualizer for more details.".format(
-                                    str(len(user_agents_list))
-                                ),
-                            )
-                        )
-
-                    classification_list = activity.get("Classification", [])
-                    classification = classification_list[0] if classification_list else ""
-
-                    rdns_list = activity.get("rDNS", [])
-                    rdns = rdns_list[0] if rdns_list else ""
-
-                    organization_list = activity.get("Organization", [])
-                    organization = organization_list[0] if organization_list else ""
-
-                    asn_list = activity.get("ASN", [])
-                    asn = asn_list[0] if asn_list else ""
-
-                    # Add row to table
-                    table_widget_timeline.addRowOfItems(
-                        [
-                            ItemInWidget(itemValue=date_formatted),
-                            ItemInWidget(itemValue=classification),
-                            tags_composite_item,
-                            ItemInWidget(itemValue=rdns),
-                            ItemInWidget(itemValue=organization),
-                            ItemInWidget(itemValue=asn),
-                            ports_composite_item,
-                            paths_composite_item,
-                            user_agents_composite_item,
-                        ]
-                    )
-
-                    # Build xrange chart data
-                    start_date = datetime.datetime.strptime(date, "%Y-%m-%d")
-                    end_date = start_date + datetime.timedelta(days=1)
-                    start_date = int(start_date.timestamp()) * 1000
-                    end_date = int(end_date.timestamp()) * 1000
-
-                    if classification:
-                        if classification == "benign":
-                            color = "green"
-                        elif classification == "malicious":
-                            color = "red"
-                        elif classification == "suspicious":
-                            color = "yellow"
-                        else:
-                            color = "gray"
-                        classification_data = {
-                            "x": start_date,
-                            "x2": end_date,
-                            "y": 0,
-                            "color": color,
-                            "value": "Classification: " + classification,
-                        }
-                        xrange_data.append(classification_data)
-
-                    if rdns:
-                        if rdns not in rdns_dict.keys():
-                            rdns_dict[rdns] = colors[len(rdns_dict) % len(colors)]
-                        rdns_data = {
-                            "x": start_date,
-                            "x2": end_date,
-                            "y": 1,
-                            "color": rdns_dict[rdns],
-                            "value": "rDNS: " + rdns,
-                        }
-                        xrange_data.append(rdns_data)
-
-                    if asn:
-                        if asn not in asn_dict.keys():
-                            asn_dict[asn] = colors[len(asn_dict) % len(colors)]
-                        asn_data = {
-                            "x": start_date,
-                            "x2": end_date,
-                            "y": 2,
-                            "color": asn_dict[asn],
-                            "value": "ASN: " + asn,
-                        }
-                        xrange_data.append(asn_data)
-                anomali_enrichment.addWidget(table_widget_timeline)
-
-                # Table Widget #5 End
-
-                # Create XRange ChartWidget
-                def create_chart_widget(template_dict, data):
-                    graph_dict = copy.deepcopy(template_dict)
-                    # fill in the data
-                    graph_dict["series"][0]["data"] = data
-                    graph_json = json.dumps(graph_dict)
-                    xrange_chart_widget = ChartWidget("IP Timeline", graph_json)
-                    return xrange_chart_widget
-
-                chart_widget = create_chart_widget(xrange_template_dict, xrange_data)
-                anomali_enrichment.addWidget(chart_widget)
-            elif timeline_error:
-                # Handle errors from the timeline function
-                if "401" in timeline_error or "Unauthorized" in timeline_error:
-                    anomali_enrichment.addMessage("ERROR", "API Key is Missing, Expired or Incorrect, please verify")
-                elif "403" in timeline_error or "Forbidden" in timeline_error:
-                    horizontal_rule_widget = HorizontalRuleWidget()
-                    anomali_enrichment.addWidget(horizontal_rule_widget)
-                    anomali_enrichment.addWidget(
-                        TextWidget(
-                            ItemInWidget(
-                                ItemTypes.String,
-                                "GreyNoise Timeline Details for %s are not available with your Subscription"
-                                % search_string,
-                                "GreyNoise Timeline Details for %s are not available with your Subscription"
-                                % search_string,
-                                "#A9A9A9",
-                                "#FFFFFF",
-                                "30px",
-                                "bold",
-                            ),
-                            True,
-                        )
-                    )
-                elif "429" in timeline_error or "Rate" in timeline_error:
-                    anomali_enrichment.addMessage("ERROR", "API Rate-Limit Reached, Please try again tomorrow.")
-                else:
-                    anomali_enrichment.addMessage(
-                        "ERROR", "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
-                    )
+            elif "429" in timeline_error or "Rate" in timeline_error:
+                anomali_enrichment.addMessage("ERROR", "API Rate-Limit Reached, Please try again tomorrow.")
             else:
-                # No data returned and no error - likely no timeline data available
-                anomali_enrichment.addMessage("INFO", "No timeline data available for this IP address.")
+                anomali_enrichment.addMessage(
+                    "ERROR", "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
+                )
+        else:
+            # No data returned and no error - likely no timeline data available
+            anomali_enrichment.addMessage("INFO", "No timeline data available for this IP address.")
     except:  # noqa E722
         anomali_enrichment.addException(
             "enrichIPTimeline Unknown Error:%sType: %s%sValue:%s"
@@ -1346,17 +1342,564 @@ def enrichIPTimeline(anomali_enrichment, search_string):  # noqa: C901
     return anomali_enrichment
 
 
+def enrichVulnerability(anomali_enrichment, search_string):  # noqa: C901
+    """
+    Enrich a CVE vulnerability with intelligence data from GreyNoise.
+
+    This function queries the GreyNoise API for vulnerability intelligence data about a specific
+    CVE identifier, providing information about whether the vulnerability is being actively
+    exploited in the wild by internet scanners and attackers.
+
+    Args:
+        anomali_enrichment (AnomaliEnrichment): The Anomali enrichment object to add widgets to.
+        search_string (str): The CVE identifier to query (e.g., "CVE-2024-1234").
+
+    Returns:
+        AnomaliEnrichment: The enrichment object with added vulnerability intelligence widgets.
+
+    Widgets Created:
+        - Header: GreyNoise Vulnerability Enrichment
+        - Table: Vulnerability intelligence data
+
+    Example:
+        >>> enrichVulnerability(anomali_enrichment, "CVE-2024-1234")
+    """
+    anomali_enrichment.addMessage("INFO", "Enriching Vulnerability: %s" % search_string)
+    search_string = search_string[0] if isinstance(search_string, list) else search_string
+    try:
+        response = requests.get(
+            api_base + "v1/cve/" + search_string,
+            headers={
+                "Accept": "application/json",
+                "key": api_key,
+                "User-Agent": USER_AGENT,
+            },
+        )
+        response_json = response.json()
+
+        if response.status_code == 200:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "GreyNoise Vulnerability Intel for %s" % search_string,
+                        "GreyNoise Vulnerability Intel for %s" % search_string,
+                        "#A9A9A9",
+                        "#FFFFFF",
+                        "35px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.Link,
+                        "https://viz.greynoise.io/cves/%s" % search_string,
+                        "View Vulnerability Details on GreyNoise Visualizer",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.Link,
+                        f"./search?q=(status%20%3D%20%22active%22)%20AND%20"
+                        f"(tags%20%3D%20%22vulnerability:{search_string}%22)",
+                        "View tagged Observables in ThreatStream",
+                    ),
+                    True,
+                )
+            )
+            # Table 1: Vulnerability Details
+            details = response_json.get("details", {})
+            if details and details != {}:
+                vuln_details_widget = TableWidget(
+                    "Vulnerability Details",
+                    ["Name", "Value"],
+                    columnWidths=["20%", "80%"],
+                )
+                vuln_details_widget.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Vulnerability Name", itemLabel="Vulnerability Name"),
+                        ItemInWidget(
+                            itemValue=details.get("vulnerability_name", ""),
+                            itemLabel=details.get("vulnerability_name", ""),
+                        ),
+                    ]
+                )
+                vuln_details_widget.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Vulnerability Description", itemLabel="Vulnerability Description"),
+                        ItemInWidget(
+                            itemValue=details.get("vulnerability_description", ""),
+                            itemLabel=details.get("vulnerability_description", ""),
+                        ),
+                    ]
+                )
+                vuln_details_widget.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="CVSS Score", itemLabel="CVSS Score"),
+                        ItemInWidget(
+                            itemValue=str(details.get("cve_cvss_score", "")),
+                            itemLabel=str(details.get("cve_cvss_score", "")),
+                        ),
+                    ]
+                )
+                vuln_details_widget.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Vendor", itemLabel="Vendor"),
+                        ItemInWidget(itemValue=details.get("vendor", ""), itemLabel=details.get("vendor", "")),
+                    ]
+                )
+                vuln_details_widget.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Product", itemLabel="Product"),
+                        ItemInWidget(itemValue=details.get("product", ""), itemLabel=details.get("product", "")),
+                    ]
+                )
+                vuln_details_widget.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Published to NIST NVD", itemLabel="Published to NIST NVD"),
+                        ItemInWidget(
+                            itemValue=str(details.get("published_to_nist_nvd", "")),
+                            itemLabel=str(details.get("published_to_nist_nvd", "")),
+                        ),
+                    ]
+                )
+                anomali_enrichment.addWidget(vuln_details_widget)
+
+            # Table 2: Timeline
+            timeline = response_json.get("timeline")
+            if timeline:
+                table_timeline = TableWidget(
+                    "Timeline",
+                    columnHeadings=["Event", "Date"],
+                    columnTypes=[ItemTypes.String, ItemTypes.String],
+                )
+                cve_published = timeline.get("cve_published_date", "")
+                if cve_published:
+                    cve_published = cve_published.split("T")[0]
+                table_timeline.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="CVE Published Date", itemLabel="CVE Published Date"),
+                        ItemInWidget(itemValue=cve_published, itemLabel=cve_published),
+                    ]
+                )
+
+                cve_updated = timeline.get("cve_last_updated_date", "")
+                if cve_updated:
+                    cve_updated = cve_updated.split("T")[0]
+                table_timeline.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="CVE Last Updated Date", itemLabel="CVE Last Updated Date"),
+                        ItemInWidget(itemValue=cve_updated, itemLabel=cve_updated),
+                    ]
+                )
+
+                first_published = timeline.get("first_known_published_date", "")
+                if first_published:
+                    first_published = first_published.split("T")[0]
+                table_timeline.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="First Known Published Date", itemLabel="First Known Published Date"),
+                        ItemInWidget(itemValue=first_published, itemLabel=first_published),
+                    ]
+                )
+
+                kev_date = timeline.get("cisa_kev_date_added", "")
+                if kev_date:
+                    kev_date = kev_date.split("T")[0]
+                table_timeline.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="CISA KEV Date Added", itemLabel="CISA KEV Date Added"),
+                        ItemInWidget(itemValue=kev_date, itemLabel=kev_date),
+                    ]
+                )
+                anomali_enrichment.addWidget(table_timeline)
+
+            # Table 3: Exploitation Details
+            exploitation = response_json.get("exploitation_details")
+            if exploitation:
+                table_exploitation = TableWidget(
+                    "Exploitation Details",
+                    columnHeadings=["Field", "Value"],
+                    columnTypes=[ItemTypes.String, ItemTypes.String],
+                )
+                table_exploitation.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Attack Vector", itemLabel="Attack Vector"),
+                        ItemInWidget(
+                            itemValue=exploitation.get("attack_vector", ""),
+                            itemLabel=exploitation.get("attack_vector", ""),
+                        ),
+                    ]
+                )
+                table_exploitation.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Exploit Found", itemLabel="Exploit Found"),
+                        ItemInWidget(
+                            itemValue=str(exploitation.get("exploit_found", "")),
+                            itemLabel=str(exploitation.get("exploit_found", "")),
+                        ),
+                    ]
+                )
+                table_exploitation.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Registered in CISA KEV", itemLabel="Registered in CISA KEV"),
+                        ItemInWidget(
+                            itemValue=str(exploitation.get("exploitation_registered_in_kev", "")),
+                            itemLabel=str(exploitation.get("exploitation_registered_in_kev", "")),
+                        ),
+                    ]
+                )
+                table_exploitation.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="EPSS Score", itemLabel="EPSS Score"),
+                        ItemInWidget(
+                            itemValue=str(exploitation.get("epss_score", "")),
+                            itemLabel=str(exploitation.get("epss_score", "")),
+                        ),
+                    ]
+                )
+                anomali_enrichment.addWidget(table_exploitation)
+
+            # Table 4: Exploitation Statistics
+            stats = response_json.get("exploitation_stats")
+            if stats:
+                table_stats = TableWidget(
+                    "Exploitation Statistics",
+                    columnHeadings=["Metric", "Count"],
+                    columnTypes=[ItemTypes.String, ItemTypes.String],
+                )
+                table_stats.addRowOfItems(
+                    [
+                        ItemInWidget(
+                            itemValue="Number of Available Exploits", itemLabel="Number of Available Exploits"
+                        ),
+                        ItemInWidget(
+                            itemValue=str(stats.get("number_of_available_exploits", "0")),
+                            itemLabel=str(stats.get("number_of_available_exploits", "0")),
+                        ),
+                    ]
+                )
+                table_stats.addRowOfItems(
+                    [
+                        ItemInWidget(
+                            itemValue="Threat Actors Exploiting Vulnerability",
+                            itemLabel="Threat Actors Exploiting Vulnerability",
+                        ),
+                        ItemInWidget(
+                            itemValue=str(stats.get("number_of_threat_actors_exploiting_vulnerability", "0")),
+                            itemLabel=str(stats.get("number_of_threat_actors_exploiting_vulnerability", "0")),
+                        ),
+                    ]
+                )
+                table_stats.addRowOfItems(
+                    [
+                        ItemInWidget(
+                            itemValue="Botnets Exploiting Vulnerability", itemLabel="Botnets Exploiting Vulnerability"
+                        ),
+                        ItemInWidget(
+                            itemValue=str(stats.get("number_of_botnets_exploiting_vulnerability", "0")),
+                            itemLabel=str(stats.get("number_of_botnets_exploiting_vulnerability", "0")),
+                        ),
+                    ]
+                )
+                anomali_enrichment.addWidget(table_stats)
+
+            # Table 5: Exploitation Activity
+            activity = response_json.get("exploitation_activity")
+            if activity:
+                if activity.get("activity_seen", False):
+                    table_activity = TableWidget(
+                        "Exploitation Activity - IPs Observed",
+                        columnHeadings=["Time Period", "Benign IPs", "Threat IPs"],
+                        columnTypes=[ItemTypes.String, ItemTypes.Link, ItemTypes.Link],
+                    )
+                else:
+                    table_activity = TableWidget(
+                        "Exploitation Activity - No IPs Observed",
+                        columnHeadings=["Time Period", "Benign IPs", "Threat IPs"],
+                        columnTypes=[ItemTypes.String, ItemTypes.String, ItemTypes.String],
+                    )
+                table_activity.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Last 1 Day", itemLabel="Last 1 Day"),
+                        ItemInWidget(
+                            itemValue=(
+                                f"https://viz.greynoise.io/query/cve:{search_string}%20AND%20"
+                                f"last_seen:1d%20AND%20classification:benign"
+                            ),
+                            itemLabel=str(activity.get("benign_ip_count_1d", "0")),
+                        ),
+                        ItemInWidget(
+                            itemValue=(
+                                f"https://viz.greynoise.io/query/cve:{search_string}%20AND%20"
+                                f"last_seen:1d%20AND%20classification:malicious"
+                            ),
+                            itemLabel=str(activity.get("threat_ip_count_1d", "0")),
+                        ),
+                    ]
+                )
+                table_activity.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Last 10 Days", itemLabel="Last 10 Days"),
+                        ItemInWidget(
+                            itemValue=(
+                                f"https://viz.greynoise.io/query/cve:{search_string}%20AND%20"
+                                f"last_seen:10d%20AND%20classification:benign"
+                            ),
+                            itemLabel=str(activity.get("benign_ip_count_10d", "0")),
+                        ),
+                        ItemInWidget(
+                            itemValue=(
+                                f"https://viz.greynoise.io/query/cve:{search_string}%20AND%20"
+                                f"last_seen:10d%20AND%20classification:malicious"
+                            ),
+                            itemLabel=str(activity.get("threat_ip_count_10d", "0")),
+                        ),
+                    ]
+                )
+                table_activity.addRowOfItems(
+                    [
+                        ItemInWidget(itemValue="Last 30 Days", itemLabel="Last 30 Days"),
+                        ItemInWidget(
+                            itemValue=(
+                                f"https://viz.greynoise.io/query/cve:{search_string}%20AND%20"
+                                f"last_seen:30d%20AND%20classification:benign"
+                            ),
+                            itemLabel=str(activity.get("benign_ip_count_30d", "0")),
+                        ),
+                        ItemInWidget(
+                            itemValue=(
+                                f"https://viz.greynoise.io/query/cve:{search_string}%20AND%20"
+                                f"last_seen:30d%20AND%20classification:malicious"
+                            ),
+                            itemLabel=str(activity.get("threat_ip_count_30d", "0")),
+                        ),
+                    ]
+                )
+                anomali_enrichment.addWidget(table_activity)
+        elif response.status_code == 400:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Invalid CVE Format",
+                        "Invalid CVE Format",
+                        "#FFFFFF",
+                        "#FFA500",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "The input '%s' is not a valid CVE identifier. "
+                        "Please provide a valid CVE in the format CVE-YYYY-NNNNN (e.g., CVE-2024-1234)."
+                        % search_string,
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addException("Invalid CVE format: %s" % search_string)
+            anomali_enrichment.addMessage("ERROR", "Invalid CVE format: %s" % search_string)
+        elif response.status_code == 401:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "API Key Error",
+                        "API Key Error",
+                        "#FFFFFF",
+                        "#FF0000",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Your GreyNoise API key is missing, expired, or incorrect. Please verify your API key.",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addException("API Key is Missing, Expired or Incorrect, please verify")
+            anomali_enrichment.addMessage("ERROR", "API Key is Missing, Expired or Incorrect, please verify")
+        elif response.status_code == 403:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "API Access Denied",
+                        "API Access Denied",
+                        "#FFFFFF",
+                        "#FF0000",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Your GreyNoise API key does not have permission to access vulnerability intelligence. "
+                        "Please check your subscription level or contact GreyNoise support.",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addException("API Access Forbidden - insufficient permissions for vulnerability data")
+            anomali_enrichment.addMessage(
+                "ERROR", "API Access Forbidden - insufficient permissions for vulnerability data"
+            )
+        elif response.status_code == 404:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "The vulnerability %s was not found in the GreyNoise vulnerability database." % search_string,
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.Link,
+                        "https://viz.greynoise.io/cves/%s" % search_string,
+                        "View on GreyNoise Visualizer",
+                    ),
+                    True,
+                )
+            )
+        elif response.status_code == 429:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Rate Limit Reached",
+                        "Rate Limit Reached",
+                        "#FFFFFF",
+                        "#FFA500",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "You have reached your daily query limit with GreyNoise. "
+                        "Please try again tomorrow or contact GreyNoise to upgrade your plan.",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addException("API Rate-Limit Reached, Please try again tomorrow.")
+            anomali_enrichment.addMessage("ERROR", "API Rate-Limit Reached, Please try again tomorrow.")
+        elif response.status_code == 500:
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "GreyNoise API Error",
+                        "GreyNoise API Error",
+                        "#FFFFFF",
+                        "#FF0000",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "An error occurred with the GreyNoise API. Please contact GreyNoise support for assistance.",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addException(
+                "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
+            )
+            anomali_enrichment.addMessage(
+                "ERROR", "An error occurred with the GreyNoise API, please contact GreyNoise for assistance."
+            )
+        else:
+            # Handle any other status codes
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Unexpected Response",
+                        "Unexpected Response",
+                        "#FFFFFF",
+                        "#808080",
+                        "30px",
+                        "bold",
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addWidget(
+                TextWidget(
+                    ItemInWidget(
+                        ItemTypes.String,
+                        "Received unexpected response from GreyNoise API (Status Code: %s). Please try again later."
+                        % response.status_code,
+                    ),
+                    True,
+                )
+            )
+            anomali_enrichment.addException("Unexpected API response: %s" % response.status_code)
+            anomali_enrichment.addMessage("ERROR", "Unexpected API response: %s" % response.status_code)
+
+    except:  # noqa E722
+        anomali_enrichment.addException(
+            "enrichVulnerability Unknown Error:%sType: %s%sValue:%s"
+            % (os.linesep, sys.exc_info()[0], os.linesep, sys.exc_info()[1])
+        )
+        anomali_enrichment.addMessage(
+            "ERROR", "An Unexpected error occurred, please try again. If the error persists please contact support."
+        )
+
+    return anomali_enrichment
+
+
 functions = {
     "enrichIP": enrichIP,
     "enrichIPTimeline": enrichIPTimeline,
+    "enrichVulnerability": enrichVulnerability,
 }
 
 if __name__ == "__main__":
     anomali_enrichment = AnomaliEnrichment()
     anomali_enrichment.parseArguments()
     transform_name = anomali_enrichment.getTransformName()
-    entity_value = anomali_enrichment.getEntityValue()
     api_key = anomali_enrichment.getCredentialValue("api_key")
-
-    functions[transform_name](anomali_enrichment, entity_value)
+    if transform_name == "enrichVulnerability":
+        input_cve_values = [x.strip() for x in anomali_enrichment.getFieldValue("cve_list")]
+        functions[transform_name](anomali_enrichment, input_cve_values)
+    else:
+        entity_value = anomali_enrichment.getEntityValue()
+        functions[transform_name](anomali_enrichment, entity_value)
     anomali_enrichment.returnOutput()
