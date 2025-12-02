@@ -1,5 +1,5 @@
-import tarfile
 import re
+import tarfile
 from zipfile import ZipFile
 
 str = open("metadata.json", "r").read()
@@ -15,9 +15,7 @@ print("enrich_ver = " + enrich_ver)
 if enrich_ver != metadata_ver:
     with open("source/greynoise_anomali_enrichment.py", "r+") as f:
         text = f.read()
-        text = re.sub(
-            'VERSION = "' + enrich_ver + '"', 'VERSION = "' + metadata_ver + '"', text
-        )
+        text = re.sub('VERSION = "' + enrich_ver + '"', 'VERSION = "' + metadata_ver + '"', text)
         f.seek(0)
         f.write(text)
         f.truncate()
@@ -34,9 +32,7 @@ print("transform_ver = " + transform_ver)
 if transform_ver != metadata_ver:
     with open("source/greynoise_anomali_transform.py", "r+") as f:
         text = f.read()
-        text = re.sub(
-            'VERSION = "' + enrich_ver + '"', 'VERSION = "' + metadata_ver + '"', text
-        )
+        text = re.sub('VERSION = "' + enrich_ver + '"', 'VERSION = "' + metadata_ver + '"', text)
         f.seek(0)
         f.write(text)
         f.truncate()
@@ -49,6 +45,7 @@ tar = tarfile.open(filename, "w:gz")
 for name in [
     "source/greynoise_anomali_enrichment.py",
     "source/greynoise_anomali_transform.py",
+    "source/greynoise_timeline.py",
     "greynoise.png",
     "metadata.json",
     "thumbnail.png",
@@ -61,8 +58,6 @@ zip_file = "bundles/greynoise-enrichment-" + metadata_ver + ".zip"
 zipObj = ZipFile(zip_file, "w")
 # Add multiple files to the zip
 zipObj.write(filename)
-zipObj.write(
-    "docs/GreyNoise Enrichment for Anomali ThreatStream v" + metadata_ver + ".pdf"
-)
+zipObj.write("docs/GreyNoise Enrichment for Anomali ThreatStream v" + metadata_ver + ".pdf")
 # close the Zip File
 zipObj.close()

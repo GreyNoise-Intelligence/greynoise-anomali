@@ -1,14 +1,14 @@
 {
     "title": "GreyNoise",
     "transform_set_name": "GreyNoise",
-    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.  Advanced features showing timeline and similarity based information is available for users with those subscription features.  Supports Community API by entering `community` in API Type field.",
+    "description": "Enrich against GreyNoise to reduce observables created by mass-internet scanning and create more time to investigate targeted attacks. This enrichment provides context into IP behavior: intent, tags, first seen, last seen, geo-data, ports, OS and JA3.  Advanced view showing timeline based information is available for users with the subscription features.  Supports free-tier users until rate-limits are reached.",
     "icons": {
         "icon_display": "greynoise.png",
         "icon_thumbnail": "thumbnail.png"
     },
     "sdk_type": "anomali",
     "app_name": "io.greynoise.intelligence",
-    "version": "2.4.0",
+    "version": "3.0.0",
     "author": "GreyNoise",
     "source_url": "https://greynoise.io",
     "license": "GreyNoise License",
@@ -22,14 +22,6 @@
             "required": true,
             "sensitive": true,
             "rank": 1
-        },
-        {
-            "name": "api_type",
-            "description": "GreyNoise API Type (enterprise or community)",
-            "label": "API Type (enterprise or community)",
-            "required": false,
-            "sensitive": false,
-            "rank": 1
         }
     ],
     "transforms": [
@@ -40,23 +32,11 @@
             "activation": true,
             "sample_entity_value": "66.249.79.60",
             "display_name": "IP Details",
-            "description": "Returns IP context data from the GreyNoise Context and RIOT API",
+            "description": "Returns IP context data from the GreyNoise IP Lookup API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_enrichment.py enrichIP",
             "entity_type": "anomali.IPv4Address",
             "rank": 1
-        },
-        {
-            "transform_name": "enrichIPSim",
-            "pivoting": false,
-            "enrichment": true,
-            "activation": false,
-            "display_name": "IP Similarity Details",
-            "description": "Returns IP Similarity information",
-            "author": "GreyNoise",
-            "parameters": "greynoise_anomali_enrichment.py enrichIPSim",
-            "entity_type": "anomali.IPv4Address",
-            "rank": 2
         },
         {
             "transform_name": "enrichIPTimeline",
@@ -64,11 +44,24 @@
             "enrichment": true,
             "activation": false,
             "display_name": "IP Timeline Details",
-            "description": "Returns IP context data from the GreyNoise Context and RIOT API",
+            "description": "Returns IP context data from the GreyNoise IP Timeline API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_enrichment.py enrichIPTimeline",
             "entity_type": "anomali.IPv4Address",
-            "rank": 3
+            "rank": 2
+        },
+        {
+            "transform_name": "enrichVulnerability",
+            "pivoting": false,
+            "enrichment": true,
+            "activation": true,
+            "sample_entity_value": "CVE-1999-0526",
+            "display_name": "Vulnerability Details",
+            "description": "Returns vulnerability context data from the GreyNoise Vulnerability Lookup API",
+            "author": "GreyNoise",
+            "parameters": "greynoise_anomali_enrichment.py enrichVulnerability",
+            "entity_type": "anomali.Vulnerability",
+            "rank": 1
         },
         {
             "transform_name": "searchiptransform",
@@ -77,7 +70,7 @@
             "activation": true,
             "sample_entity_value": "66.249.79.60",
             "display_name": "Search IP",
-            "description": "Returns IP data points from the GreyNoise Context and RIOT API",
+            "description": "Returns IP data points from the GreyNoise IP Lookup API",
             "author": "GreyNoise",
             "parameters": "greynoise_anomali_transform.py 'Search IP'",
             "entity_type": "anomali.IPv4Address",
